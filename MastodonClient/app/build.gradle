@@ -21,6 +21,8 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        multiDexEnabled true // 64k をコスものに対して必要
     }
 
     buildTypes {
@@ -36,6 +38,10 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
+    packagingOptions {
+        pickFirst "androidsupportmultidexversion.txt"
+    }
 }
 
 dependencies {
@@ -49,11 +55,22 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
+    // These are for fragment View
     def fragment_version = "1.2.4"
-
     // Java language implementation
     implementation "androidx.fragment:fragment:$fragment_version"
     // Kotlin
     implementation "androidx.fragment:fragment-ktx:$fragment_version"
-    // Testing Fragments in Isolation
+
+    implementation 'com.squareup.retrofit2:retrofit:2.7.1' // API
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.3.3" // コルーチン
+    implementation "com.squareup.moshi:moshi-kotlin:1.9.2"  // JSON パース用
+    implementation 'com.squareup.retrofit2:converter-moshi:2.7.0'
+    implementation 'androidx.recyclerview:recyclerview:1.1.0'   // 便利なリスト形式表示
+    implementation 'com.github.bumptech.glide:glide:4.10.0'     // 画像表示ライブラリ
+    kapt 'com.github.bumptech.glide:compiler:4.10.0'
+
+    implementation 'com.android.support:multidex:1.0.3'   // For large build
+    implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
 }
+
