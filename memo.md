@@ -35,4 +35,4 @@
   - Androidと何か？
 - val, var
 - `binding = bindingData ?: return`
-a
+
