@@ -19,6 +19,16 @@
   ```
 
 
+## chap6
+- [Mastodon](https://androidbook2020.keiji.io/web/timelines/home)
+  - id: kokoichi
+  - pw: hogehoge
+  - Access Token
+- この辺を書いたメモを、`instance.properties`にまとめる
+  - `.gitignore`に追加
+  - 階層に注意
+
+
 
 ## 疑問
 - binding?.button?.text = "clicked" の ? って何？
