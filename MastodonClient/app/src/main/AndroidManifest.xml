@@ -18,6 +18,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ui.toot_detail.TootDetailActivity" />
+        <activity android:name=".ui.toot_edit.TootEditActivity"
+            android:windowSoftInputMode="adjustResize"/>
     </application>
 
 </manifest>

@@ -30,7 +30,17 @@
 
 ## chap7
 - [material designs](https://material.io/resources/icons/?style=baseline)
-
+- p186の`android:id=@+id/root`は、`id/fragment_container`にした
+- ActivityはAndroidのシステムコンポーネント
+  - →システムコンポーネントは`Manifest.xml`に登録する必要がある！
+- 暗黙的インテントの例
+```kotlin
+val intent = Intent(
+  Intent.ACTION_VIEW,
+  Uri.parse("geo:34.6960586,135.5126556)
+)
+startActivity(intent)
+```
 
 
 ## 疑問

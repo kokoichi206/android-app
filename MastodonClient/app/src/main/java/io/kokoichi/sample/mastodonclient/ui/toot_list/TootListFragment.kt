@@ -1,5 +1,7 @@
 package io.kokoichi.sample.mastodonclient.ui.toot_list
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
@@ -19,7 +21,8 @@ import io.kokoichi.sample.mastodonclient.ui.toot_list.TootListViewModelFactory
 import io.kokoichi.sample.mastodonclient.databinding.FragmentTootListBinding
 import io.kokoichi.sample.mastodonclient.entity.Account
 import io.kokoichi.sample.mastodonclient.entity.Toot
-import io.kokoichi.sample.mastodonclient.ui.toot_detail.TootDetailFragment
+import io.kokoichi.sample.mastodonclient.ui.toot_detail.TootDetailActivity
+import io.kokoichi.sample.mastodonclient.ui.toot_edit.TootEditActivity
 
 //import kotlinx.coroutines.CoroutineScope
 //import kotlinx.coroutines.cancel
@@ -32,6 +35,8 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list),
 
     companion object {
         val TAG = TootListFragment::class.java.simpleName
+
+        private const val REQUEST_CODE_TOOT_EDIT = 0x01
 
         private const val BUNDLE_KEY_TIMELINE_TYPE_ORDINAL = "timeline_type_ordinal"
 
@@ -145,10 +150,11 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list),
             it.addOnScrollListener(loadNextScrollListener)
         }
         bindingData.swipeRefreshLayout.setOnRefreshListener {
-//            tootListSnapshot.clear()
             viewModel.clear()
-//            loadNext()
             viewModel.loadNext()
+        }
+        bindingData.fab.setOnClickListener {
+            launchTootEditActivity()
         }
 //        isLoading.observe(viewLifecycleOwner, Observer {
         viewModel.isLoading.observe(viewLifecycleOwner, Observer {
@@ -163,6 +169,11 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list),
         })
 
         viewLifecycleOwner.lifecycle.addObserver(viewModel)
+    }
+
+    private fun launchTootEditActivity() {
+        val intent = TootEditActivity.newIntent(requireContext())
+        startActivityForResult(intent, REQUEST_CODE_TOOT_EDIT)
     }
 
     private fun showAccountInfo(accountInfo: Account) {
@@ -187,10 +198,17 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list),
 //    }
 
     override fun openDetail(toot: Toot) {
-        var fragment = TootDetailFragment.newInstance(toot)
-        parentFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container_view_tag, fragment)
-            .addToBackStack(TootDetailFragment.TAG)
-            .commit()
+        val intent = TootDetailActivity.newIntent(requireContext(), toot)
+        startActivity(intent)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_CODE_TOOT_EDIT
+            && resultCode == Activity.RESULT_OK) {
+            viewModel.clear()
+            viewModel.loadNext()
+        }
     }
 }
