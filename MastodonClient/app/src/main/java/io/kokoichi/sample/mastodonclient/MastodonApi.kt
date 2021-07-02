@@ -17,4 +17,9 @@ interface MastodonApi {
         @Header("Authorization") accessToken: String,
         @Query("max_id") maxId: String? = null
     ): List<Toot>
+
+    @GET("api/v1/accounts/verify_credentials")
+    suspend fun verifyAccountCredential(
+        @Header("Authorization") accessToken: String
+    ) : Account
 }

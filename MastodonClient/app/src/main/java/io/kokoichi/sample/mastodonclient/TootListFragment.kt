@@ -3,6 +3,7 @@ package io.kokoichi.sample.mastodonclient
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
@@ -23,7 +24,8 @@ import kotlinx.coroutines.withContext
 //import retrofit2.converter.moshi.MoshiConverterFactory
 import java.util.concurrent.atomic.AtomicBoolean
 
-class TootListFragment : Fragment(R.layout.fragment_toot_list) {
+class TootListFragment : Fragment(R.layout.fragment_toot_list),
+    TootListAdapter.Callback {
 
     companion object {
         val TAG = TootListFragment::class.java.simpleName
@@ -69,7 +71,7 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list) {
 //            val isLoadingSnapshot = isLoading.value ?: return
 //            if (isLoadingSnapshot || !hasNext.get()) {
             val isLoadingSnapshot = viewModel.isLoading.value ?: return
-            if (isLoadingSnapshot || !viewModel.hasNext){
+            if (isLoadingSnapshot || !viewModel.hasNext) {
                 return
             }
 
@@ -78,7 +80,8 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list) {
             val firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition()
 
             if ((totalItemCount - visibleItemCount) <=
-                firstVisibleItemPosition) {
+                firstVisibleItemPosition
+            ) {
 //                loadNext()
                 viewModel.loadNext()
             }
@@ -98,11 +101,12 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list) {
             viewModel.tootList.value = it
         }
 
-        adapter = TootListAdapter(layoutInflater, tootListSnapshot)
+        adapter = TootListAdapter(layoutInflater, tootListSnapshot,this)
         layoutManager = LinearLayoutManager(
             requireContext(),
             LinearLayoutManager.VERTICAL,
-            false)
+            false
+        )
         val bindingData: FragmentTootListBinding? = DataBindingUtil.bind(view)
         binding = bindingData ?: return
 
@@ -121,12 +125,22 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list) {
         viewModel.isLoading.observe(viewLifecycleOwner, Observer {
             binding?.swipeRefreshLayout?.isRefreshing = it
         })
+        viewModel.accountInfo.observe(viewLifecycleOwner, Observer {
+            showAccountInfo(it)
+        })
 //        tootList.observe(viewLifecycleOwner, Observer {
         viewModel.tootList.observe(viewLifecycleOwner, Observer {
             adapter.notifyDataSetChanged()
         })
 
         viewLifecycleOwner.lifecycle.addObserver(viewModel)
+    }
+
+    private fun showAccountInfo(accountInfo: Account) {
+        val activity = requireActivity()
+        if (activity is AppCompatActivity) {
+            activity.supportActionBar?.subtitle = accountInfo.username
+        }
     }
 
     override fun onDestroyView() {
@@ -143,36 +157,11 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list) {
 //        binding?.swipeRefreshLayout?.isRefreshing = false
 //    }
 
-//    private fun loadNext() {
-////        coroutineScope.launch {
-//        lifecycleScope.launch {
-////            isLoading.set(true)
-////            showProgress()
-//            isLoading.postValue(true)
-//
-//            val tootListSnapshot = tootList.value ?: ArrayList()
-//
-//            val tootListResponse = tootRepository.fetchPublicTimeline(
-//                maxId = tootListSnapshot.lastOrNull()?.id,
-//                onlyMedia = true
-//            )
-//            Log.d(TAG, "fetchPublicTimeline")
-//
-////            Thread.sleep(10 * 1000)
-//
-//            tootListSnapshot.addAll(tootListResponse.filter { !it.sensitive })
-////            tootList.addAll(tootListResponse)
-//            Log.d(TAG, "addAll")
-//
-////            reloadTootList()
-////            Log.d(TAG, "reloadTootList")
-//            tootList.postValue(tootListSnapshot)
-//
-////            isLoading.set(false)
-////            dismissProgress()
-//            hasNext.set(tootListResponse.isNotEmpty())
-//            isLoading.postValue(false)
-//            Log.d(TAG, "dismissProgress")
-//        }
-//    }
+    override fun openDetail(toot: Toot) {
+        var fragment = TootDetailFragment.newInstance(toot)
+        parentFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .addToBackStack(TootDetailFragment.TAG)
+            .commit()
+    }
 }
