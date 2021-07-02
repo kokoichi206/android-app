@@ -1,7 +1,9 @@
-package io.kokoichi.sample.mastodonclient
+package io.kokoichi.sample.mastodonclient.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import io.kokoichi.sample.mastodonclient.R
+import io.kokoichi.sample.mastodonclient.ui.toot_list.TootListFragment
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

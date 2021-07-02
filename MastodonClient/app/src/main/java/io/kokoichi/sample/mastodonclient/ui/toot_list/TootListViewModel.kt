@@ -1,4 +1,4 @@
-package io.kokoichi.sample.mastodonclient
+package io.kokoichi.sample.mastodonclient.ui.toot_list
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -6,6 +6,12 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleObserver
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.OnLifecycleEvent
+import io.kokoichi.sample.mastodonclient.entity.Account
+import io.kokoichi.sample.mastodonclient.entity.Toot
+import io.kokoichi.sample.mastodonclient.entity.UserCredential
+import io.kokoichi.sample.mastodonclient.repository.AccountRepository
+import io.kokoichi.sample.mastodonclient.repository.TootRepository
+import io.kokoichi.sample.mastodonclient.repository.UserCredentialRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 

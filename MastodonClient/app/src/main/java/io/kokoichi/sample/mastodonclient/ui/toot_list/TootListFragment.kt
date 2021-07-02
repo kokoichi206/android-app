@@ -1,7 +1,6 @@
-package io.kokoichi.sample.mastodonclient
+package io.kokoichi.sample.mastodonclient.ui.toot_list
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.databinding.DataBindingUtil
@@ -12,17 +11,20 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import io.kokoichi.sample.mastodonclient.BuildConfig
+import io.kokoichi.sample.mastodonclient.R
 //import com.squareup.moshi.Moshi
 //import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.kokoichi.sample.mastodonclient.databinding.FragmentTootListBinding
+import io.kokoichi.sample.mastodonclient.entity.Account
+import io.kokoichi.sample.mastodonclient.entity.Toot
+import io.kokoichi.sample.mastodonclient.ui.toot_detail.TootDetailFragment
+
 //import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 //import kotlinx.coroutines.cancel
 //import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 //import retrofit2.Retrofit
 //import retrofit2.converter.moshi.MoshiConverterFactory
-import java.util.concurrent.atomic.AtomicBoolean
 
 class TootListFragment : Fragment(R.layout.fragment_toot_list),
     TootListAdapter.Callback {

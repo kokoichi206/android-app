@@ -1,4 +1,4 @@
-package io.kokoichi.sample.mastodonclient
+package io.kokoichi.sample.mastodonclient.entity
 
 import android.os.Parcelable
 import com.squareup.moshi.Json

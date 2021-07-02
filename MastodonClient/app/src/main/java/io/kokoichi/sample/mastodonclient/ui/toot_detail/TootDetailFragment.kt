@@ -1,4 +1,4 @@
-package io.kokoichi.sample.mastodonclient
+package io.kokoichi.sample.mastodonclient.ui.toot_detail
 
 import android.os.Bundle
 import android.view.View
@@ -9,7 +9,10 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import io.kokoichi.sample.mastodonclient.ui.MediaAdapter
+import io.kokoichi.sample.mastodonclient.R
 import io.kokoichi.sample.mastodonclient.databinding.FragmentTootDetailBinding
+import io.kokoichi.sample.mastodonclient.entity.Toot
 
 class TootDetailFragment : Fragment(R.layout.fragment_toot_detail) {
 

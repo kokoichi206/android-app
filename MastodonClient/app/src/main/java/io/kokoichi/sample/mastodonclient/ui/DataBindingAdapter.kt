@@ -5,6 +5,7 @@ import android.widget.TextView
 import androidx.core.text.HtmlCompat
 import androidx.databinding.BindingAdapter
 import com.bumptech.glide.Glide
+import io.kokoichi.sample.mastodonclient.entity.Media
 
 @BindingAdapter("spannedContent")   // メソッドをDataBindingからSpannedContetn属性として利用する
 fun TextView.setSpannedString(content: String) {

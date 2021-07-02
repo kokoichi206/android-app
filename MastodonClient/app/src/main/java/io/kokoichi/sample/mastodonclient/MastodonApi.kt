@@ -1,5 +1,7 @@
 package io.kokoichi.sample.mastodonclient
 
+import io.kokoichi.sample.mastodonclient.entity.Account
+import io.kokoichi.sample.mastodonclient.entity.Toot
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.Query

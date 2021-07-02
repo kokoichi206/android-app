@@ -1,10 +1,12 @@
-package io.kokoichi.sample.mastodonclient
+package io.kokoichi.sample.mastodonclient.ui
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.RecyclerView
+import io.kokoichi.sample.mastodonclient.R
 import io.kokoichi.sample.mastodonclient.databinding.ListItemMediaBinding
+import io.kokoichi.sample.mastodonclient.entity.Media
 
 class MediaAdapter(
     private val layoutInflater: LayoutInflater

@@ -1,4 +1,4 @@
-package io.kokoichi.sample.mastodonclient
+package io.kokoichi.sample.mastodonclient.ui
 
 import android.os.Bundle
 import android.view.View
@@ -6,7 +6,10 @@ import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import io.kokoichi.sample.mastodonclient.MastodonApi
+import io.kokoichi.sample.mastodonclient.R
 import io.kokoichi.sample.mastodonclient.databinding.FragmentMainBinding
+import io.kokoichi.sample.mastodonclient.entity.Toot
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
