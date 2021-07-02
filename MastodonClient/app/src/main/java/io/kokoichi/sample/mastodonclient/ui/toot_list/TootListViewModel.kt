@@ -88,4 +88,14 @@ class TootListViewModel (
 
         accountInfo.postValue(accountInfoSnapshot)
     }
+
+    fun delete(toot: Toot) {
+        coroutineScope.launch {
+            tootRepository.delete(toot.id)
+
+            val tootListSnapshot = tootList.value
+            tootListSnapshot?.remove(toot)
+            tootList.postValue(tootListSnapshot)
+        }
+    }
 }

@@ -202,6 +202,10 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list),
         startActivity(intent)
     }
 
+    override fun delete(toot: Toot) {
+        viewModel.delete(toot)
+    }
+
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
