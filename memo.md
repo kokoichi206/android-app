@@ -28,6 +28,9 @@
   - `.gitignore`に追加
   - 階層に注意
 
+## chap7
+- [material designs](https://material.io/resources/icons/?style=baseline)
+
 
 
 ## 疑問

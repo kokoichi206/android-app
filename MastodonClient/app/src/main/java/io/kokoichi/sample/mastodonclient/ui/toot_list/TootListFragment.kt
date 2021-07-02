@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import io.kokoichi.sample.mastodonclient.BuildConfig
 import io.kokoichi.sample.mastodonclient.R
+import io.kokoichi.sample.mastodonclient.ui.toot_list.TootListViewModelFactory
 //import com.squareup.moshi.Moshi
 //import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import io.kokoichi.sample.mastodonclient.databinding.FragmentTootListBinding
@@ -162,7 +163,7 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list),
     override fun openDetail(toot: Toot) {
         var fragment = TootDetailFragment.newInstance(toot)
         parentFragmentManager.beginTransaction()
-            .replace(R.id.fragment_container, fragment)
+            .replace(R.id.fragment_container_view_tag, fragment)
             .addToBackStack(TootDetailFragment.TAG)
             .commit()
     }
