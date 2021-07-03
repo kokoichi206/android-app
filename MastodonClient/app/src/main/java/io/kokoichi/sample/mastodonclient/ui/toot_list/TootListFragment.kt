@@ -132,14 +132,11 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list),
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-//        val tootListSnapshot = tootList.value ?: ArrayList<Toot>().also {
-//            tootList.value = it
+//        var tootListSnapshot = viewModel.tootList.value ?: ArrayList<Toot>().also {
+//            viewModel.tootList.value = it
 //        }
-        var tootListSnapshot = viewModel.tootList.value ?: ArrayList<Toot>().also {
-            viewModel.tootList.value = it
-        }
 
-        adapter = TootListAdapter(layoutInflater, tootListSnapshot,this)
+        adapter = TootListAdapter(layoutInflater, lifecycleScope,this)
         layoutManager = LinearLayoutManager(
             requireContext(),
             LinearLayoutManager.VERTICAL,
@@ -177,7 +174,8 @@ class TootListFragment : Fragment(R.layout.fragment_toot_list),
         })
 //        tootList.observe(viewLifecycleOwner, Observer {
         viewModel.tootList.observe(viewLifecycleOwner, Observer {
-            adapter.notifyDataSetChanged()
+//            adapter.notifyDataSetChanged()
+            adapter.tootList = it
         })
 
         viewLifecycleOwner.lifecycle.addObserver(viewModel)

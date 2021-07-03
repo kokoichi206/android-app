@@ -1,16 +1,11 @@
 package io.kokoichi.sample.mastodonclient
 
 import io.kokoichi.sample.mastodonclient.entity.Account
+import io.kokoichi.sample.mastodonclient.entity.Media
 import io.kokoichi.sample.mastodonclient.entity.ResponseToken
 import io.kokoichi.sample.mastodonclient.entity.Toot
-import retrofit2.http.DELETE
-import retrofit2.http.Field
-import retrofit2.http.FormUrlEncoded
-import retrofit2.http.GET
-import retrofit2.http.Header
-import retrofit2.http.POST
-import retrofit2.http.Path
-import retrofit2.http.Query
+import okhttp3.MultipartBody
+import retrofit2.http.*
 
 interface MastodonApi {
 
@@ -35,7 +30,8 @@ interface MastodonApi {
     @POST("api/v1/statuses")
     suspend fun postToot(
         @Header("Authorization") accessToken: String,
-        @Field("status") status: String
+        @Field("status") status: String,
+        @Field("media_ids[]") mediaIds: List<String>? = null
     ): Toot
 
     @DELETE("api/v1/statuses/{id}")
@@ -43,6 +39,13 @@ interface MastodonApi {
         @Header("Authorization") accessToken: String,
         @Path("id") id: String
     )
+
+    @Multipart
+    @POST("api/v1/media")
+    suspend fun postMedia(
+        @Header("Authorization") accessToken: String,
+        @Part file: MultipartBody.Part
+    ): Media
 
     @FormUrlEncoded
     @POST("oauth/token")

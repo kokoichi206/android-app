@@ -1,5 +1,6 @@
 package io.kokoichi.sample.mastodonclient.ui.toot_edit
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -26,6 +27,7 @@ class TootEditFragment : Fragment(R.layout.fragment_toot_edit) {
         val TAG = TootEditFragment::class.java.simpleName
 
         private const val REQUEST_CODE_LOGIN = 0x01
+        private const val REQUEST_CHOOSE_MEDIA = 0x02
 
         fun newInstance(): TootEditFragment {
             return TootEditFragment()
@@ -61,8 +63,11 @@ class TootEditFragment : Fragment(R.layout.fragment_toot_edit) {
 
         val bindingData: FragmentTootEditBinding? = DataBindingUtil.bind(view)
         binding = bindingData ?: return
-        bindingData.lifecycleOwner = viewLifecycleOwner
-        bindingData.viewModel = viewModel
+//        bindingData.lifecycleOwner = viewLifecycleOwner
+//        bindingData.viewModel = viewModel
+        bindingData.addMedia.setOnClickListener {
+            openMediaChooser()
+        }
 
         viewModel.loginRequired.observe(viewLifecycleOwner, Observer {
             if (it) {
@@ -80,6 +85,25 @@ class TootEditFragment : Fragment(R.layout.fragment_toot_edit) {
                 .show()
         })
     }
+    private fun openMediaChooser() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "image/*"
+        }
+        startActivityForResult(intent, REQUEST_CHOOSE_MEDIA)
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        val uri = data?.data
+        if (requestCode == REQUEST_CHOOSE_MEDIA
+            && resultCode == Activity.RESULT_OK
+            && uri != null) {
+            viewModel.addMedia(uri)
+        }
+    }
+
     private fun launchLoginActivity() {
         val intent = Intent(requireContext(), LoginActivity::class.java)
         startActivityForResult(intent, REQUEST_CODE_LOGIN)

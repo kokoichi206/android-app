@@ -1,14 +1,19 @@
 package io.kokoichi.sample.mastodonclient.ui.toot_edit
 
 import android.app.Application
+import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import io.kokoichi.sample.mastodonclient.entity.LocalMedia
+import io.kokoichi.sample.mastodonclient.repository.MediaRepository
 import io.kokoichi.sample.mastodonclient.repository.TootRepository
 import io.kokoichi.sample.mastodonclient.repository.UserCredentialRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import retrofit2.HttpException
+import java.io.IOException
 import java.net.HttpURLConnection
+import javax.xml.transform.OutputKeys.MEDIA_TYPE
 
 class TootEditViewModel(
     private val instanceUrl: String,
@@ -20,6 +25,8 @@ class TootEditViewModel(
         application
     )
     val status = MutableLiveData<String>()
+
+    private val mediaRepository = MediaRepository(application)
 
     val loginRequired = MutableLiveData<Boolean>()
 
@@ -41,8 +48,12 @@ class TootEditViewModel(
             }
             val tootRepository = TootRepository(credential)
             try {
+                val uploadedMediaIds = mediaAttachments.value?.map {
+                    tootRepository.postMedia(it.file, it.mediaType)
+                }?.map { it.id }
                 tootRepository.postToot(
-                    statusSnapshot
+                    statusSnapshot,
+                    uploadedMediaIds
                 )
                 postComplete.postValue(true)
             } catch (e: HttpException) {
@@ -51,8 +62,34 @@ class TootEditViewModel(
                         errorMessage.postValue("必要な権限がありません")
                     }
                 }
+            } catch (e: IOException) {
+                errorMessage.postValue(
+                    "サーバーに接続できませんでした。${e.message}"
+                )
             }
             postComplete.postValue(true)
         }
+    }
+
+    val mediaAttachments = MutableLiveData<ArrayList<LocalMedia>>()
+
+    fun addMedia(mediaUri: Uri) {
+        coroutineScope.launch {
+            try {
+                val bitmap = mediaRepository.readBitmap(mediaUri)
+                val tempFile = mediaRepository.saveBitmap(bitmap)
+
+                val newMediaAttachments = ArrayList<LocalMedia>()
+                mediaAttachments.value?.also {
+                    newMediaAttachments.addAll(it)
+                }
+                newMediaAttachments.add(LocalMedia(tempFile, MEDIA_TYPE))
+            } catch (e: IOException) {
+                handleMediaException(mediaUri, e)
+            }
+        }
+    }
+    private fun handleMediaException(mediaUri: Uri, e: IOException) {
+        errorMessage.postValue("メディアを読み込めません。${e.message} ${mediaUri}")
     }
 }
