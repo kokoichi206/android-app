@@ -42,6 +42,10 @@ val intent = Intent(
 startActivity(intent)
 ```
 
+## chap10
+- IOException
+  - ネットワークが繋がらない場合やサーバーが応答しない場合
+
 
 ## 疑問
 - binding?.button?.text = "clicked" の ? って何？
