@@ -3,3 +3,9 @@
   - [公式](https://gihyo.jp/book/2020/978-4-297-11343-8/support)
   - 6/28~
 
+## ImageAnalysis
+- A great way to make your camera app more interesting is using the ImageAnalysis feature.
+- It allows you to define a custom class that implements the ImageAnalysis.Analyzer interface, and which will be called with incoming camera frames.
+- You won't have to manage the camera session state or even dispose of images;
+  - binding to our app's desired lifecycle is sufficient, like with other lifecycle-aware components.
+
