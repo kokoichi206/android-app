@@ -3,15 +3,21 @@ package io.kokoichi.sample.face
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
+import android.media.Image
 import android.net.Uri
 import android.util.Log
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import java.util.concurrent.Executors
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import com.google.mlkit.vision.common.InputImage
+import com.google.mlkit.vision.face.FaceDetectorOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.nio.ByteBuffer
@@ -20,8 +26,11 @@ import java.util.*
 import java.util.concurrent.ExecutorService
 typealias LumaListener = (luma: Double) -> Unit
 
-class MainActivity : AppCompatActivity() {
+class MainActivity() : AppCompatActivity() {
     private var imageCapture: ImageCapture? = null
+    private lateinit var viewFinder: PreviewView
+    private lateinit var overlay: Overlay
+//    private var cameraExecutor = Executors.newSingleThreadExecutor()
 
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
@@ -29,6 +38,15 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+        viewFinder = findViewById(R.id.viewFinder)
+        // For face detection
+        overlay = Overlay(this)
+        val layoutOverlay = ViewGroup.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        )
+        this.addContentView(overlay,layoutOverlay)
+        // End For face detection
 
         // Request camera permissions
         if (allPermissionsGranted()) {
@@ -76,47 +94,35 @@ class MainActivity : AppCompatActivity() {
             })
     }
 
-    private fun startCamera() {
-        // bind the lifecycle of cameras to the lifecycle owner
+    @SuppressLint("UnsafeExperimentalUsageError")
+    private fun startCamera()
+    {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-
         cameraProviderFuture.addListener(Runnable {
             // Used to bind the lifecycle of cameras to the lifecycle owner
             val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
-
-            // Preview
-            val preview = Preview.Builder()
+            // Select back camera as a default
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            // Preview UseCase
+            val previewUseCase = Preview.Builder()
                 .build()
                 .also {
                     it.setSurfaceProvider(viewFinder.surfaceProvider)
                 }
-
-            imageCapture = ImageCapture.Builder()
-                .build()
-
-            val imageAnalyzer = ImageAnalysis.Builder()
+            // ImageAnalysis UseCase
+            val analysisUseCase = ImageAnalysis.Builder()
                 .build()
                 .also {
-                    it.setAnalyzer(cameraExecutor, LuminosityAnalyzer { luma ->
-                        Log.d(TAG, "Average luminosity: $luma")
-                    })
+                    it.setAnalyzer(cameraExecutor,FaceAnalyzer(lifecycle,overlay))
                 }
-            // Select back camera as a default
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-//            val cameraSelector = CameraSelector.DEFAULT_FRONT_CAMERA
-
             try {
                 // Unbind use cases before rebinding
                 cameraProvider.unbindAll()
-
                 // Bind use cases to camera
-                cameraProvider.bindToLifecycle(
-                    this, cameraSelector, preview, imageCapture, imageAnalyzer)
-
+                cameraProvider.bindToLifecycle(this,cameraSelector,previewUseCase,analysisUseCase)
             } catch(exc: Exception) {
                 Log.e(TAG, "Use case binding failed", exc)
             }
-
         }, ContextCompat.getMainExecutor(this))
     }
 
@@ -181,5 +187,33 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-
+//    private class YourImageAnalyzer : ImageAnalysis.Analyzer {
+//
+//        override fun analyze(imageProxy: ImageProxy) {
+//            val mediaImage = imageProxy.image
+//            if (mediaImage != null) {
+//                val image = InputImage.fromMediaImage(mediaImage, imageProxy.imageInfo.rotationDegrees)
+//                // Pass image to an ML Kit Vision API
+//                // ...
+//            }
+//        }
+//    }
+//    private fun imageFromMediaImage(mediaImage: Image, rotation: Int) {
+//        // [START image_from_media_image]
+//        val image = InputImage.fromMediaImage(mediaImage, rotation)
+//        // [END image_from_media_image]
+//    }
+//
+//
+//    // High-accuracy landmark detection and face classification
+//    val highAccuracyOpts = FaceDetectorOptions.Builder()
+//        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_ACCURATE)
+//        .setLandmarkMode(FaceDetectorOptions.LANDMARK_MODE_ALL)
+//        .setClassificationMode(FaceDetectorOptions.CLASSIFICATION_MODE_ALL)
+//        .build()
+//
+//    // Real-time contour detection
+//    val realTimeOpts = FaceDetectorOptions.Builder()
+//        .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
+//        .build()
 }
