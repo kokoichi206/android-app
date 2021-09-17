@@ -9,6 +9,7 @@ import io.kokoichi.sample.mastodonclient.entity.UserCredential
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Retrofit
@@ -64,7 +65,7 @@ class TootRepository (
         val part = MultipartBody.Part.createFormData(
             "file",
             file.name,
-            RequestBody.create(MediaType.parse(mediaType), file)
+            RequestBody.create(mediaType.toMediaTypeOrNull(), file)
         )
         return@withContext api.postMedia(
             "Bearer ${userCredential.accessToken}",

@@ -98,5 +98,7 @@ dependencies {
     implementation 'com.android.support:multidex:1.0.3'   // For large build
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
     implementation "com.google.android.material:material:1.1.0"
+
+    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
 }
 
