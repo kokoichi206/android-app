@@ -63,7 +63,6 @@ class FaceDetect extends AsyncTask<String, Void, String> {
         uriBuilder.scheme("https");
         uriBuilder.authority(API_URL_PREFIX);
         uriBuilder.path(PATH);
-//        uriBuilder.appendQueryParameter("q", "夏目漱石");
         final String uriStr = uriBuilder.build().toString();
 
         Log.d("hoge", "uriStr: " + uriStr);
@@ -78,19 +77,6 @@ class FaceDetect extends AsyncTask<String, Void, String> {
         HttpURLConnection con = null;
 
         try {
-
-//            Bitmap bitmap = BitmapFactory.decodeResource(res, R.drawable.ayamen);
-//            /// POST送信するデータをバイト配列で用意
-//            StringBuilder postData = new StringBuilder();
-//            for (Map.Entry<String, Object> entry : bitmap) {
-//                if (postData.length() != 0) postData.append('&');
-//                postData.append(URLEncoder.encode(entry.getKey(), "UTF-8"))
-//                        .append('=')
-//                        .append(URLEncoder.encode(String.valueOf(entry.getValue()), "UTF-8"));
-//            }
-//            byte[] postDataBytes = postData.toString().getBytes("UTF-8");
-//
-
             con = (HttpURLConnection) url.openConnection();
 
             con.setRequestMethod("POST");
@@ -106,27 +92,10 @@ class FaceDetect extends AsyncTask<String, Void, String> {
             Log.d("hoge", "initial set finish");
 
 
-
-
-//
-//            Bitmap bitmap = BitmapFactory.decodeResource(res, R.drawable.ayamen);
-//            OutputStream out = new BufferedOutputStream(con.getOutputStream());
-////            writeStream(out);
-//            bitmap.compress(Bitmap.CompressFormat.JPEG, 50, out);
-//
-////            InputStream in = new BufferedInputStream(con.getInputStream());
-////            readStream(in);
-
-
-
-
             Log.d("hoge","connect");
 
 
             con.connect(); //HTTP接続
-
-
-
 
 
             // CONTENT
@@ -159,14 +128,6 @@ class FaceDetect extends AsyncTask<String, Void, String> {
 //
 
 
-
-
-
-
-
-
-
-
             // Content PART 2
             // ------------------------------------------------------------------
             DataOutputStream request = new DataOutputStream(
@@ -179,23 +140,14 @@ class FaceDetect extends AsyncTask<String, Void, String> {
             request.writeBytes(crlf);
 
             // とりあえず、固定の画像を送ってみる
+            // TODO: 自分の好きな画像を選んで、送れるようにする
             Bitmap bitmap = BitmapFactory.decodeResource(res, R.drawable.ayamen);
 
             Log.d("hoge", "bitmap width: " + bitmap.getWidth());
             Log.d("hoge", "bitmap height: " + bitmap.getHeight());
 
-            //I want to send only 8 bit black & white bitmaps
-            byte[] pixels = new byte[bitmap.getWidth() * bitmap.getHeight()];
-            for (int i = 0; i < bitmap.getWidth(); ++i) {
-                for (int j = 0; j < bitmap.getHeight(); ++j) {
-                    //we're interested only in the MSB of the first byte,
-                    //since the other 3 bytes are identical for B&W images
-                    pixels[i + j] = (byte) ((bitmap.getPixel(i, j) & 0x80) >> 7);
-                }
-            }
 
-
-            request.write(pixels);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 50, request);
 
             request.writeBytes(crlf);
             request.writeBytes(twoHyphens + boundary + twoHyphens + crlf);
@@ -205,7 +157,9 @@ class FaceDetect extends AsyncTask<String, Void, String> {
 
             Log.d("hoge", "input proceeding");
             final InputStream in = con.getInputStream();
+            Log.d("hoge", "input stream reader");
             final InputStreamReader inReader = new InputStreamReader(in);
+            Log.d("hoge", "buffer reader");
             final BufferedReader bufReader = new BufferedReader(inReader);
 
             Log.d("hoge", "==== in ====");
@@ -224,11 +178,7 @@ class FaceDetect extends AsyncTask<String, Void, String> {
 
         catch(Exception e) { //エラー
             Log.d("hoge", String.valueOf(e));
-            Log.e("button", e.getMessage());
             Log.d("hoge", "error while posting");
-        }
-        finally {
-            con.disconnect();
         }
 
         Log.d("hoge", "result: " + result);
@@ -243,26 +193,9 @@ class FaceDetect extends AsyncTask<String, Void, String> {
         try {
             JSONObject json = new JSONObject(result);
 
-            Log.d("hoge", String.valueOf(json));
-
-
-//            String name = json.getString("name");
-//            int mi_age = json.getInt("age");
-//
-//            Log.d("hoge", name);
-//            Log.d("hoge", String.valueOf(mi_age));
-
-            TextView titleView = titleViewReference.get();
-            TextView dateView = dateViewReference.get();
             TextView descView = descViewReference.get();
 
-//            titleView.setText(name);
-////            dateView.setText(publishedDate);
-//            dateView.setText(String.valueOf(mi_age));
-
-
             descView.setText(json.toString());
-
 
         } catch (JSONException e) {
             Log.d("hoge", "onPostExecute ERROR");
