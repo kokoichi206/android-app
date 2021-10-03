@@ -21,12 +21,25 @@
 ### kotlin memo
 - sortedByDescending
 - DI using hilt
-
+- エルビス演算子
+  - message = e.message ?: "Coulnd't save note"
 
 ```kotlin
 _state.value = state.value.copy(
     isOrderSectionVisible = !state.value.isOrderSectionVisible
 )
+```
+
+### androidx.compose.runtime.State
+```kotlin
+@HiltViewModel
+class AddEditNoteViewModel @Inject constructor(
+    private val noteUseCases: NoteUseCases
+) : ViewModel() {
+
+    private val _noteTitle = mutableStateOf("")
+    val noteTitle: State<String> = _noteTitle
+}
 ```
 
 

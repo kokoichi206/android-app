@@ -9,10 +9,7 @@ import dagger.hilt.components.SingletonComponent
 import io.kokoichi.sample.cleanarchitecture.feature_note.data.data_source.NoteDatabase
 import io.kokoichi.sample.cleanarchitecture.feature_note.data.repository.NoteRepositoryImpl
 import io.kokoichi.sample.cleanarchitecture.feature_note.domain.repository.NoteRepository
-import io.kokoichi.sample.cleanarchitecture.feature_note.domain.use_case.AddNote
-import io.kokoichi.sample.cleanarchitecture.feature_note.domain.use_case.DeleteNote
-import io.kokoichi.sample.cleanarchitecture.feature_note.domain.use_case.GetNotes
-import io.kokoichi.sample.cleanarchitecture.feature_note.domain.use_case.NoteUseCases
+import io.kokoichi.sample.cleanarchitecture.feature_note.domain.use_case.*
 import javax.inject.Singleton
 
 @Module
@@ -42,6 +39,7 @@ object AppModule {
             getNotes = GetNotes(repository),
             deleteNote = DeleteNote(repository),
             addNote = AddNote(repository),
+            getNote = GetNote(repository),
         )
     }
 }
