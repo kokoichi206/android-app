@@ -15,6 +15,7 @@ Samples
 |:-----|:---------:|
 | <br>Java<br><br>A sample Program to use API in the background.<br>This project is managed by different repo.<br><br> • AsyncTask<br><br>**[> Browse](https://github.com/kokoichi206/til/tree/main/android/android_text/AsyncSample/app/src/main)** | <img src="readme/Weather.gif" width="160"> |  
 |  |  |  
-| <br>Java<br><br>A sample Program to use API in the background.<br>This project is managed by different repo.<br><br> • GameLoop<br><br>**[> Browse](https://github.com/kokoichi206/til/tree/main/android/FlyGame/app/src/main)** | <img src="readme/FlyGame.gif" width="320"> |  
+| <br>Java<br><br>A sample Program of a game.<br>This project is managed by different repo.<br><br> • GameLoop<br><br>**[> Browse](https://github.com/kokoichi206/til/tree/main/android/FlyGame/app/src/main)** | <img src="readme/FlyGame.gif" width="320"> |  
 |  |  |  
+| <br>Kotlin <br>**Jetpack compose**<br><br>A sample Program of Clean Architecture and jetpack compose.<br><br> • Clean Architecture<br> • Jetpack Compose<br> • Local storage with Room<br> • Showing [Snackbars](https://material.io/components/snackbars) with Compose<br> • Uses [Hilt](https://dagger.dev/hilt/) for dependency injection<br><br>**[> Browse](CleanArchitecture/app/src/main)** | <img src="readme/screenshots/NoteApp.png" width="160"> |  
 
