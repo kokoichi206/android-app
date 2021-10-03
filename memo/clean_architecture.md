@@ -23,6 +23,8 @@
 - DI using hilt
 - エルビス演算子
   - message = e.message ?: "Coulnd't save note"
+- `navController.navigateUp()`
+
 
 ```kotlin
 _state.value = state.value.copy(
@@ -42,6 +44,24 @@ class AddEditNoteViewModel @Inject constructor(
 }
 ```
 
+### scope?
+I wanna understand these code below
+
+```kotlin
+val scope = rememberCoroutineScope()
+    ...
+    .clickable {
+        scope.launch {
+            noteBackgroundAnimatable.animateTo(
+                targetValue = Color(colorInt),
+                animationSpec = tween(
+                    durationMillis = 500
+                )
+            )
+        }
+    }
+```
+
 
 ### Questions
 - operator fun invoke()...
@@ -49,4 +69,4 @@ class AddEditNoteViewModel @Inject constructor(
 - companion object ?
 - sealed class
 - scaffoldState ?
-
+- scope.launch
