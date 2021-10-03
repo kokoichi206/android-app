@@ -22,7 +22,17 @@
 - sortedByDescending
 - DI using hilt
 
+
+```kotlin
+_state.value = state.value.copy(
+    isOrderSectionVisible = !state.value.isOrderSectionVisible
+)
+```
+
+
 ### Questions
 - operator fun invoke()...
   - operator ?
 - companion object ?
+- sealed class
+
