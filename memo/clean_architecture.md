@@ -71,6 +71,7 @@ val scope = rememberCoroutineScope()
 - scaffoldState ?
 - scope.launch
 - ??
+- `viewModel: NotesViewModel = hiltViewModel()`
 
 ```kotlin
 sealed class Screen(val route: String) {

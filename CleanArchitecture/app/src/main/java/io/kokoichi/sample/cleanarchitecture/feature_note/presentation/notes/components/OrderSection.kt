@@ -1,6 +1,7 @@
 package io.kokoichi.sample.cleanarchitecture.feature_note.presentation.notes.components
 
 import android.icu.text.CaseMap
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -49,6 +50,7 @@ fun OrderSection(
                 text = "Ascending",
                 selected = noteOrder.orderType is OrderType.Ascending,
                 onSelect = {
+                    Log.d("hoge", noteOrder.orderType.toString())
                     onOrderChange(noteOrder.copy(OrderType.Ascending))
                 }
             )
@@ -57,6 +59,7 @@ fun OrderSection(
                 text = "Descending",
                 selected = noteOrder.orderType is OrderType.Descending,
                 onSelect = {
+                    Log.d("hoge", noteOrder.orderType.toString())
                     onOrderChange(noteOrder.copy(OrderType.Descending))
                 }
             )
