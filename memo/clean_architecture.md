@@ -20,3 +20,8 @@
   
 ### kotlin memo
 - sortedByDescending
+
+
+### Questions
+- operator fun invoke()...
+  - operator ?
