@@ -14,7 +14,7 @@ class NoteRepositoryImpl(
     }
 
     override suspend fun getNoteById(id: Int): Note? {
-        return dao.getNoteById()
+        return dao.getNoteById(id)
     }
 
     override suspend fun insertNote(note: Note) {

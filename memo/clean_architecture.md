@@ -9,6 +9,8 @@
 - Domain
   - connecting layer
   - buisiness logic
+    - use_case package
+      - how to access our repository
 
 ### memo
 - repository
@@ -16,3 +18,5 @@
   - which source do I have to return
     - cache or API?
   
+### kotlin memo
+- sortedByDescending
