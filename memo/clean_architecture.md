@@ -20,8 +20,9 @@
   
 ### kotlin memo
 - sortedByDescending
-
+- DI using hilt
 
 ### Questions
 - operator fun invoke()...
   - operator ?
+- companion object ?
