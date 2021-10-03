@@ -70,3 +70,11 @@ val scope = rememberCoroutineScope()
 - sealed class
 - scaffoldState ?
 - scope.launch
+- ??
+
+```kotlin
+sealed class Screen(val route: String) {
+    object NotesScreen: Screen("notes_screen")
+    object AddEditNotesScreen: Screen("add_edit_note_screen")
+}
+```
