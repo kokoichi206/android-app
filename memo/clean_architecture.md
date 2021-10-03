@@ -10,4 +10,9 @@
   - connecting layer
   - buisiness logic
 
-
+### memo
+- repository
+  - logic here?
+  - which source do I have to return
+    - cache or API?
+  
