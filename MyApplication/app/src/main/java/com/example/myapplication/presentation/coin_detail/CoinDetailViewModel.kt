@@ -1,5 +1,6 @@
 package com.example.myapplication.presentation.coin_detail
 
+import android.util.Log
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
@@ -25,9 +26,9 @@ class CoinDetailViewModel @Inject constructor(
     val state: State<CoinDetailState> = _state
 
     init {
-        savedStateHandle.get<String>(Constants.PARAM_COIN_ID)?.let { coinId -> {
+        savedStateHandle.get<String>(Constants.PARAM_COIN_ID)?.let { coinId ->
             getCoin(coinId)
-        }}
+        }
     }
 
     private fun getCoin(coinId: String) {
