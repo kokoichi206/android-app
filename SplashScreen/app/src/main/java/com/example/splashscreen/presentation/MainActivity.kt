@@ -8,6 +8,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.ui.Modifier
 import com.example.splashscreen.presentation.ui.theme.SplashScreenTheme
+import com.example.splashscreen.presentation.util.Navigation
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,7 +20,7 @@ class MainActivity : ComponentActivity() {
                     color = MaterialTheme.colors.background,
                     modifier = Modifier.fillMaxSize()
                 ) {
-
+                    Navigation()
                 }
             }
         }
