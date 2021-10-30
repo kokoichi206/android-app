@@ -16,10 +16,7 @@ private val DarkColorPalette = darkColors(
 )
 
 @Composable
-fun SplashScreenTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    content: @Composable() () -> Unit
-) {
+fun SplashScreenTheme(content: @Composable() () -> Unit) {
     MaterialTheme(
         colors = DarkColorPalette,
         typography = Typography,
