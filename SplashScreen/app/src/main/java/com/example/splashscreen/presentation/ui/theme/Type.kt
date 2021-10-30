@@ -1,4 +1,4 @@
-package com.example.splashscreen.ui.theme
+package com.example.splashscreen.presentation.ui.theme
 
 import androidx.compose.material.Typography
 import androidx.compose.ui.text.TextStyle
