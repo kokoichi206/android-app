@@ -14,6 +14,9 @@ fun Navigation() {
         startDestination = Screen.SplashScreen.route
     ) {
         composable(Screen.SplashScreen.route) {
+
+        }
+        composable(Screen.LoginScreen.route) {
             
         }
     }
