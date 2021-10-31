@@ -17,5 +17,8 @@ Samples
 |  |  |  
 | <br>Java<br><br>A sample Program of a game.<br>This project is managed by different repo.<br><br> • GameLoop<br><br>**[> Browse](https://github.com/kokoichi206/til/tree/main/android/FlyGame/app/src/main)** | <img src="readme/FlyGame.gif" width="320"> |  
 |  |  |  
-| <br>Kotlin <br>**Jetpack compose**<br><br>A sample Program of Clean Architecture and jetpack compose.<br><br> • Clean Architecture<br> • Jetpack Compose<br> • Local storage with Room<br> • Showing [Snackbars](https://material.io/components/snackbars) with Compose<br> • Uses [Hilt](https://dagger.dev/hilt/) for dependency injection<br><br>**[> Browse](CleanArchitecture/app/src/main)** | <img src="readme/screenshots/NoteApp.png" width="160"> |  
-
+| <br>Kotlin <br>**Jetpack compose**<br><br>A sample Program of Clean Architecture and jetpack compose.<br><br> • Clean Architecture<br> • Jetpack Compose<br> • Local storage with Room<br> • Showing [Snackbars](https://material.io/components/snackbars) with Compose<br><br>**[> Browse](CleanArchitecture/app/src)** | <img src="readme/screenshots/NoteApp.png" width="160"> |  
+|  |  |  
+| <br>Kotlin <br>**Jetpack compose**<br><br> • MVVM<br> • Jetpack Compose<br> • API access (refrofit)<br> • API test<br> • Room DAO<br> • Uses [Hilt](https://dagger.dev/hilt/) for dependency injection<br><br>**[> Browse](MyApplication/app/src/main)** | <img src="readme/screenshots/coins.png" width="160"> |  
+|  |  |  
+| <br>Kotlin <br>**Jetpack compose**<br><br> • Jetpack Compose<br> • Splash Screen<br> • Custom font<br> • UI tests<br><br>**[> Browse](SplashScreen/app/src/main)** | <img src="readme/splash.gif" width="160"> |  
