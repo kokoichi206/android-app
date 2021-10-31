@@ -14,13 +14,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import com.example.splashscreen.R
+import com.example.splashscreen.presentation.util.TestTags
 
 @Composable
 fun StandardTextField(
+    modifier: Modifier = Modifier,
     text: String = "",
     hint: String = "",
     maxLength: Int = 20,
@@ -60,9 +64,15 @@ fun StandardTextField(
         singleLine = true,
         trailingIcon = {
             if (isPasswordToggleDisplayed) {
-                IconButton(onClick = {
-                    isPasswordVisible = !isPasswordVisible
-                }) {
+                IconButton(
+                    onClick = {
+                        isPasswordVisible = !isPasswordVisible
+                    },
+                    modifier = Modifier
+                        .semantics {
+                            testTag = TestTags.PASSWORD_TOGGLE
+                        }
+                ) {
                     Icon(
                         imageVector = if (isPasswordVisible) {
                             Icons.Filled.VisibilityOff
@@ -78,7 +88,7 @@ fun StandardTextField(
                 }
             }
         },
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
     )
 }
