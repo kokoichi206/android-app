@@ -23,6 +23,7 @@ import com.example.splashscreen.R
 fun StandardTextField(
     text: String = "",
     hint: String = "",
+    maxLength: Int = 20,
     isError: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
     onValueChange: (String) -> Unit
@@ -36,7 +37,11 @@ fun StandardTextField(
 
     TextField(
         value = text,
-        onValueChange = onValueChange,
+        onValueChange = {
+            if (it.length <= maxLength) {
+                onValueChange(it)
+            }
+        },
         placeholder = {
             Text(
                 text = hint,
