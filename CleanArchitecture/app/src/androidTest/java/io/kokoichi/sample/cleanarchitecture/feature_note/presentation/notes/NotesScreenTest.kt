@@ -10,7 +10,6 @@ import androidx.compose.ui.test.performClick
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.test.core.app.ApplicationProvider
 import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dagger.hilt.android.testing.UninstallModules
@@ -19,7 +18,6 @@ import io.kokoichi.sample.cleanarchitecture.core.util.TestTags
 import io.kokoichi.sample.cleanarchitecture.feature_note.di.AppModule
 import io.kokoichi.sample.cleanarchitecture.feature_note.presentation.util.Screen
 import io.kokoichi.sample.cleanarchitecture.ui.theme.CleanArchitectureTheme
-import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
