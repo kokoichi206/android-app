@@ -14,7 +14,7 @@ private val DarkColorPalette = darkColors(
 )
 
 @Composable
-fun SplashScreenTheme(content: @Composable() () -> Unit) {
+fun SocialNetworkTwitchTheme(content: @Composable() () -> Unit) {
     MaterialTheme(
         colors = DarkColorPalette,
         typography = Typography,
