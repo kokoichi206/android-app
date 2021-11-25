@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="app/src/main/res/drawable/ic_bell.xml" value="0.21203703703703702" />
         <entry key="app/src/main/res/drawable/ic_home.xml" value="0.2351851851851852" />
         <entry key="app/src/main/res/drawable/ic_launcher_background.xml" value="0.25092592592592594" />
         <entry key="app/src/main/res/drawable/ic_logo.xml" value="0.387037037037037" />
