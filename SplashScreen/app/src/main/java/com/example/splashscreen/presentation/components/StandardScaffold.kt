@@ -1,15 +1,18 @@
 package com.example.splashscreen.presentation.components
 
+import androidx.compose.foundation.layout.RowScope
 import com.example.splashscreen.R
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
@@ -67,7 +70,7 @@ fun StandardScaffold(
                                 alertCount = bottomNavItem.alertCount,
                                 enabled = bottomNavItem.icon != null,
                             ) {
-                                if(navController.currentDestination?.route != bottomNavItem.route) {
+                                if (navController.currentDestination?.route != bottomNavItem.route) {
                                     navController.navigate(bottomNavItem.route)
                                 }
                             }

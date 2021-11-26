@@ -9,8 +9,10 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.splashscreen.R
 import com.example.splashscreen.presentation.components.StandardScaffold
 import com.example.splashscreen.presentation.ui.theme.SocialNetworkTwitchTheme
 import com.example.splashscreen.presentation.util.Navigation

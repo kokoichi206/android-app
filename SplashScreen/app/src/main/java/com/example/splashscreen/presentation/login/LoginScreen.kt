@@ -57,6 +57,7 @@ fun LoginScreen(
                 onValueChange = {
                     viewModel.setUsernameText(it)
                 },
+                keyboardType = KeyboardType.Email,
                 error = viewModel.usernameError.value,
                 hint = stringResource(id = R.string.login_hint)
             )
