@@ -8,6 +8,7 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -17,6 +18,7 @@ import com.example.splashscreen.R
 import com.example.splashscreen.domain.models.Post
 import com.example.splashscreen.presentation.components.Post
 import com.example.splashscreen.presentation.components.StandardToolbar
+import com.example.splashscreen.presentation.util.Screen
 
 @Composable
 fun MainFeedScreen(
@@ -37,9 +39,11 @@ fun MainFeedScreen(
             modifier = Modifier.fillMaxWidth(),
             showBackArrow = true,
             navActions = {
-                IconButton(onClick = { /*TODO*/ }) {
+                IconButton(onClick = {
+                    navController.navigate(Screen.SearchScreen.route)
+                }) {
                     Icon(
-                        imageVector = Icons.Default.Add,
+                        imageVector = Icons.Default.Search,
                         contentDescription = "",
                         tint = MaterialTheme.colors.onBackground
                     )
@@ -56,7 +60,10 @@ fun MainFeedScreen(
                         "elit. Sed et efficitur orci. Mauris id elit a mauris accumsan .",
                 likeCount = 18023,
                 commentCount = 723
-            )
+            ),
+            onPostClick = {
+                navController.navigate(Screen.PostDetailScreen.route)
+            }
         )
     }
 }
