@@ -27,4 +27,8 @@
     <string name="back">Navigate back</string>
     <string name="your_feed">Your feed</string>
     <string name="your_feet">Your feet</string>
+    <string name="liked">liked</string>
+    <string name="ommented_on">commented on</string>
+    <string name="your_post">your post</string>
+    <string name="your_activity">Your activity</string>
 </resources>
