@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -31,6 +32,8 @@ import com.example.splashscreen.presentation.profile.components.ProfileHeaderSec
 import com.example.splashscreen.presentation.ui.theme.ProfilePictureSizeLarge
 import com.example.splashscreen.presentation.ui.theme.SpaceMedium
 import com.example.splashscreen.presentation.util.Screen
+import com.example.splashscreen.presentation.util.toDp
+import com.example.splashscreen.presentation.util.toPx
 
 @Composable
 fun ProfileScreen(
@@ -40,21 +43,34 @@ fun ProfileScreen(
     var toolBarOffsetY by remember {
         mutableStateOf(0f)
     }
-    val toolbarHeightCollapsed = 56.dp
+
+    val toolbarHeightCollapsed = 75.dp
+    val imageCollapsedOffsetY = remember {
+        (toolbarHeightCollapsed - ProfilePictureSizeLarge / 2f) / 2f
+    }
+
     val bannerHeight = (LocalConfiguration.current.screenWidthDp / 2.5f).dp
     val toolbarHeightExpanded = remember {
         bannerHeight + ProfilePictureSizeLarge
+    }
+    val maxOffset = remember {
+        toolbarHeightExpanded - toolbarHeightCollapsed
+    }
+    var expandedRatio by remember {
+        mutableStateOf(1f)
     }
     val nestedScrollConnection = remember {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 val delta = available.y
                 val newOffset = toolBarOffsetY + delta
-//                toolBarOffsetY = newOffset.coerceIn(
-//                    minimumValue =
-//                )
-
-                return super.onPreScroll(available, source)
+                toolBarOffsetY = newOffset.coerceIn(
+                    minimumValue = -maxOffset.toPx(),
+                    maximumValue = 0f
+                )
+                expandedRatio = ((toolBarOffsetY + maxOffset.toPx()) / maxOffset.toPx())
+                return Offset.Zero
+//                return Offset(x = 0f, y = available.y * 0.5f)
             }
         }
     }
@@ -117,7 +133,13 @@ fun ProfileScreen(
                 .align(Alignment.TopCenter)
         ) {
             BannerSection(
-                modifier = Modifier.height(bannerHeight)
+                modifier = Modifier
+                    .height(
+                        (bannerHeight * expandedRatio).coerceIn(
+                            minimumValue = toolbarHeightCollapsed,
+                            maximumValue = bannerHeight
+                        )
+                    )
             )
             Image(
                 painter = painterResource(id = R.drawable.mayu),
@@ -125,7 +147,15 @@ fun ProfileScreen(
                 modifier = Modifier
                     .align(CenterHorizontally)
                     .graphicsLayer {
-                        translationY = -ProfilePictureSizeLarge.toPx() / 2f
+                        translationY = -ProfilePictureSizeLarge.toPx() / 2f -
+                               (1f - expandedRatio) * imageCollapsedOffsetY.toPx()
+                        transformOrigin = TransformOrigin(
+                            pivotFractionX = 0.5f,
+                            pivotFractionY = 0f
+                        )
+                        val scale = 0.5f * (1 + expandedRatio)
+                        scaleX = scale
+                        scaleY = scale
                     }
                     .size(ProfilePictureSizeLarge)
                     .clip(CircleShape)
