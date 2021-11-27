@@ -69,7 +69,7 @@ dependencies {
     implementation "androidx.navigation:navigation-compose:2.4.0-beta02"
     implementation "androidx.compose.material:material-icons-extended:$compose_version"
     implementation "com.google.accompanist:accompanist-flowlayout:0.17.0"
-    implementation "me.onebone:toolbar-compose:2.3.0"
+    implementation "com.google.accompanist:accompanist-flowlayout:0.21.3-beta"
 
     // Coroutines
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2'

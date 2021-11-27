@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.splashscreen.domain.models.Post
+import com.example.splashscreen.presentation.EditProfileScreen
 import com.example.splashscreen.presentation.activity.ActivityScreen
 import com.example.splashscreen.presentation.chat.ChatScreen
 import com.example.splashscreen.presentation.create_post.CreatePostScreen
@@ -25,7 +26,7 @@ fun Navigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.ProfileScreen.route,
+        startDestination = Screen.EditProfileScreen.route,
 //        startDestination = Screen.SplashScreen.route,
         modifier = Modifier.fillMaxSize()
     ) {
@@ -47,8 +48,11 @@ fun Navigation(
         composable(Screen.ActivityScreen.route) {
             ActivityScreen(navController = navController)
         }
-        composable(Screen.ProfileScreen.route) {
-            ProfileScreen(navController = navController)
+        composable(Screen.EditProfileScreen.route) {
+            EditProfileScreen(navController = navController)
+        }
+        composable(Screen.CreatePostScreen.route) {
+            CreatePostScreen(navController = navController)
         }
         composable(Screen.CreatePostScreen.route) {
             CreatePostScreen(navController = navController)
