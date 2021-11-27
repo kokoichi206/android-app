@@ -1,6 +1,7 @@
 package com.example.splashscreen.presentation.util
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
@@ -18,15 +19,17 @@ import com.example.splashscreen.presentation.login.LoginScreen
 import com.example.splashscreen.presentation.login.RegisterScreen
 import com.example.splashscreen.presentation.post_detail.PostDetailScreen
 import com.example.splashscreen.presentation.profile.ProfileScreen
+import com.example.splashscreen.presentation.search.SearchScreen
 import com.example.splashscreen.presentation.splash.SplashScreen
 
+@ExperimentalMaterialApi
 @Composable
 fun Navigation(
     navController: NavHostController,
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.EditProfileScreen.route,
+        startDestination = Screen.SearchScreen.route,
 //        startDestination = Screen.SplashScreen.route,
         modifier = Modifier.fillMaxSize()
     ) {
@@ -56,6 +59,9 @@ fun Navigation(
         }
         composable(Screen.CreatePostScreen.route) {
             CreatePostScreen(navController = navController)
+        }
+        composable(Screen.SearchScreen.route) {
+            SearchScreen(navController = navController)
         }
         composable(Screen.PostDetailScreen.route) {
             PostDetailScreen(
