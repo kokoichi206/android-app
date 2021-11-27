@@ -29,7 +29,7 @@ fun Navigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.SearchScreen.route,
+        startDestination = Screen.CreatePostScreen.route,
 //        startDestination = Screen.SplashScreen.route,
         modifier = Modifier.fillMaxSize()
     ) {
@@ -53,9 +53,6 @@ fun Navigation(
         }
         composable(Screen.EditProfileScreen.route) {
             EditProfileScreen(navController = navController)
-        }
-        composable(Screen.CreatePostScreen.route) {
-            CreatePostScreen(navController = navController)
         }
         composable(Screen.CreatePostScreen.route) {
             CreatePostScreen(navController = navController)

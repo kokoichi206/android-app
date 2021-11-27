@@ -153,7 +153,7 @@ fun EditProfileScreen(
                         .fillMaxWidth(),
                     text = viewModel.bioState.value.text,
                     hint = stringResource(id = R.string.your_bio),
-                    error = viewModel.linkedInTextFieldState.value.error,
+                    error = viewModel.bioState.value.error,
                     singleLine = false,
                     maxLines = 3,
                     leadingIcon = Icons.Default.Description,

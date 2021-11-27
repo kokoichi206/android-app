@@ -49,4 +49,9 @@
     <string name="select_top_3_skills">Select your top 3 skills</string>
     <string name="save_changes">save changes</string>
     <string name="search">Search</string>
+    <string name="create_post">Create post</string>
+    <string name="create_a_new_post">Create a new post</string>
+    <string name="choose_image">Choose Image</string>
+    <string name="post">Post</string>
+    <string name="description">Descriptino</string>
 </resources>
