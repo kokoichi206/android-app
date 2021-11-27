@@ -54,4 +54,5 @@
     <string name="choose_image">Choose Image</string>
     <string name="post">Post</string>
     <string name="description">Descriptino</string>
+    <string name="liked_by">LIked by</string>
 </resources>

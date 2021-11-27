@@ -17,6 +17,7 @@ import com.example.splashscreen.presentation.create_post.CreatePostScreen
 import com.example.splashscreen.presentation.main_feed.MainFeedScreen
 import com.example.splashscreen.presentation.login.LoginScreen
 import com.example.splashscreen.presentation.login.RegisterScreen
+import com.example.splashscreen.presentation.person_list.PersonListScreen
 import com.example.splashscreen.presentation.post_detail.PostDetailScreen
 import com.example.splashscreen.presentation.profile.ProfileScreen
 import com.example.splashscreen.presentation.search.SearchScreen
@@ -29,7 +30,7 @@ fun Navigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.CreatePostScreen.route,
+        startDestination = Screen.PersonListScreen.route,
 //        startDestination = Screen.SplashScreen.route,
         modifier = Modifier.fillMaxSize()
     ) {
@@ -75,6 +76,9 @@ fun Navigation(
                     commentCount = 723
                 )
             )
+        }
+        composable(Screen.PersonListScreen.route) {
+            PersonListScreen(navController = navController)
         }
     }
 }
