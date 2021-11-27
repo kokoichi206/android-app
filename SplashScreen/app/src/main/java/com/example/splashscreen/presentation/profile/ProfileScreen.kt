@@ -31,8 +31,8 @@ import com.example.splashscreen.presentation.profile.components.BannerSection
 import com.example.splashscreen.presentation.profile.components.ProfileHeaderSection
 import com.example.splashscreen.presentation.ui.theme.ProfilePictureSizeLarge
 import com.example.splashscreen.presentation.ui.theme.SpaceMedium
+import com.example.splashscreen.presentation.ui.theme.SpaceSmall
 import com.example.splashscreen.presentation.util.Screen
-import com.example.splashscreen.presentation.util.toDp
 import com.example.splashscreen.presentation.util.toPx
 
 @Composable
@@ -43,12 +43,14 @@ fun ProfileScreen(
     var toolBarOffsetY by remember {
         mutableStateOf(0f)
     }
-    var totalToolbarOffsetY by remember {
-        mutableStateOf(0f)
-    }
+
+    val iconHorizontalCenterLength =
+        (LocalConfiguration.current.screenWidthDp.dp.toPx() / 4f -
+                (ProfilePictureSizeLarge / 4f).toPx() -
+                SpaceSmall.toPx()) / 2f
 
 //    val isFirstItemVisible = lazyListState.firstVisibleItemIndex == 0
-    
+
     val iconSizeExpanded = 35.dp
 
     val toolbarHeightCollapsed = 75.dp
@@ -74,7 +76,7 @@ fun ProfileScreen(
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 val delta = available.y
-                if(delta > 0f && lazyListState.firstVisibleItemIndex != 0) {
+                if (delta > 0f && lazyListState.firstVisibleItemIndex != 0) {
                     return Offset.Zero
                 }
                 val newOffset = toolBarOffsetY + delta
@@ -156,11 +158,20 @@ fun ProfileScreen(
                             maximumValue = bannerHeight
                         )
                     ),
-                iconModifier = Modifier
+                leftIconModifier = Modifier
                     .graphicsLayer {
                         translationY = (1f - expandedRatio) *
                                 -iconCollapsedOffsetY.toPx()
-                    }
+                        translationX = (1f - expandedRatio) *
+                                iconHorizontalCenterLength
+                    },
+                rightIconModifier = Modifier
+                    .graphicsLayer {
+                        translationY = (1f - expandedRatio) *
+                                -iconCollapsedOffsetY.toPx()
+                        translationX = (1f - expandedRatio) *
+                                -iconHorizontalCenterLength
+                    },
             )
             Image(
                 painter = painterResource(id = R.drawable.mayu),
