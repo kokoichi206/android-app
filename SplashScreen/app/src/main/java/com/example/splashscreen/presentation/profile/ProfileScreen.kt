@@ -43,10 +43,21 @@ fun ProfileScreen(
     var toolBarOffsetY by remember {
         mutableStateOf(0f)
     }
+    var totalToolbarOffsetY by remember {
+        mutableStateOf(0f)
+    }
+
+//    val isFirstItemVisible = lazyListState.firstVisibleItemIndex == 0
+    
+    val iconSizeExpanded = 35.dp
 
     val toolbarHeightCollapsed = 75.dp
     val imageCollapsedOffsetY = remember {
         (toolbarHeightCollapsed - ProfilePictureSizeLarge / 2f) / 2f
+    }
+
+    val iconCollapsedOffsetY = remember {
+        (toolbarHeightCollapsed - iconSizeExpanded) / 2f
     }
 
     val bannerHeight = (LocalConfiguration.current.screenWidthDp / 2.5f).dp
@@ -63,11 +74,15 @@ fun ProfileScreen(
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 val delta = available.y
+                if(delta > 0f && lazyListState.firstVisibleItemIndex != 0) {
+                    return Offset.Zero
+                }
                 val newOffset = toolBarOffsetY + delta
                 toolBarOffsetY = newOffset.coerceIn(
                     minimumValue = -maxOffset.toPx(),
                     maximumValue = 0f
                 )
+//                totalToolbarOffsetY += toolBarOffsetY
                 expandedRatio = ((toolBarOffsetY + maxOffset.toPx()) / maxOffset.toPx())
                 return Offset.Zero
 //                return Offset(x = 0f, y = available.y * 0.5f)
@@ -83,6 +98,7 @@ fun ProfileScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
+            state = lazyListState,  // state を登録する
         ) {
             item {
                 Spacer(
@@ -139,7 +155,12 @@ fun ProfileScreen(
                             minimumValue = toolbarHeightCollapsed,
                             maximumValue = bannerHeight
                         )
-                    )
+                    ),
+                iconModifier = Modifier
+                    .graphicsLayer {
+                        translationY = (1f - expandedRatio) *
+                                -iconCollapsedOffsetY.toPx()
+                    }
             )
             Image(
                 painter = painterResource(id = R.drawable.mayu),
@@ -148,7 +169,7 @@ fun ProfileScreen(
                     .align(CenterHorizontally)
                     .graphicsLayer {
                         translationY = -ProfilePictureSizeLarge.toPx() / 2f -
-                               (1f - expandedRatio) * imageCollapsedOffsetY.toPx()
+                                (1f - expandedRatio) * imageCollapsedOffsetY.toPx()
                         transformOrigin = TransformOrigin(
                             pivotFractionX = 0.5f,
                             pivotFractionY = 0f
