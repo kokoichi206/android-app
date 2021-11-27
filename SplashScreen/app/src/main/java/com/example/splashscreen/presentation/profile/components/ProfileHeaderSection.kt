@@ -40,18 +40,7 @@ fun ProfileHeaderSection(
             .fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.mayu),
-            contentDescription = stringResource(id = R.string.profile_image),
-            modifier = Modifier
-                .size(ProfilePictureSizeLarge)
-                .clip(CircleShape)
-                .border(
-                    width = 1.dp,
-                    color = MaterialTheme.colors.onSurface,
-                    shape = CircleShape
-                )
-        )
+
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
