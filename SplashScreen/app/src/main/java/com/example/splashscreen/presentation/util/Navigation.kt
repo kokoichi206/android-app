@@ -30,8 +30,8 @@ fun Navigation(
 ) {
     NavHost(
         navController = navController,
-        startDestination = Screen.PersonListScreen.route,
-//        startDestination = Screen.SplashScreen.route,
+//        startDestination = Screen.PostDetailScreen.route,
+        startDestination = Screen.SplashScreen.route,
         modifier = Modifier.fillMaxSize()
     ) {
         composable(Screen.SplashScreen.route) {
@@ -79,6 +79,9 @@ fun Navigation(
         }
         composable(Screen.PersonListScreen.route) {
             PersonListScreen(navController = navController)
+        }
+        composable(Screen.ProfileScreen.route) {
+            ProfileScreen(navController = navController)
         }
     }
 }

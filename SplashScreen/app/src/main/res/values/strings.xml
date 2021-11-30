@@ -55,4 +55,6 @@
     <string name="post">Post</string>
     <string name="description">Descriptino</string>
     <string name="liked_by">LIked by</string>
+    <string name="followed_youfo">followed you</string>
+    <string name="followed_you">followed you</string>
 </resources>
