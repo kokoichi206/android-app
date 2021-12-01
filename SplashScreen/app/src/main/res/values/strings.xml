@@ -57,4 +57,8 @@
     <string name="liked_by">LIked by</string>
     <string name="followed_youfo">followed you</string>
     <string name="followed_you">followed you</string>
+    <string name="this_field_cant_be_empty">This field can\'t be empty.</string>
+    <string name="not_a_valid_email">This is not a valid email.</string>
+    <string name="input_too_short">The minimum length is %d.</string>
+    <string name="invalid_password">The password needs to contain at least one upper case and one number.</string>
 </resources>
