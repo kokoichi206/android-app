@@ -1,6 +1,7 @@
 package com.example.splashscreen.feature_auth.data.dto.response
 
-data class BasicApiResponse(
+data class BasicApiResponse<T>(
     val successful: Boolean,
     val message: String? = null,
+    val data: T? = null,
 )

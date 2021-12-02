@@ -1,8 +1,10 @@
 package com.example.splashscreen.di
 
+import android.content.SharedPreferences
 import com.example.splashscreen.feature_auth.data.remote.AuthApi
 import com.example.splashscreen.feature_auth.data.repository.AuthRepositoryImpl
 import com.example.splashscreen.feature_auth.domain.repository.AuthRepository
+import com.example.splashscreen.feature_auth.domain.usecase.LoginUseCase
 import com.example.splashscreen.feature_auth.domain.usecase.RegisterUseCase
 import dagger.Module
 import dagger.Provides
@@ -28,13 +30,19 @@ object AuthModule {
 
     @Provides
     @Singleton
-    fun provideAuthRepository(api: AuthApi): AuthRepository {
-        return AuthRepositoryImpl(api)
+    fun provideAuthRepository(api: AuthApi, sharedPreferences: SharedPreferences): AuthRepository {
+        return AuthRepositoryImpl(api, sharedPreferences)
     }
 
     @Provides
     @Singleton
     fun provideRegisterUseCase(repository: AuthRepository): RegisterUseCase {
         return RegisterUseCase(repository)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLoginUseCase(repository: AuthRepository): LoginUseCase {
+        return LoginUseCase(repository)
     }
 }
