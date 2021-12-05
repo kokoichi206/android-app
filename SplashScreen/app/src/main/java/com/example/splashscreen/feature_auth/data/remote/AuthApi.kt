@@ -4,7 +4,9 @@ import com.example.splashscreen.feature_auth.data.dto.request.CreateAccountReque
 import com.example.splashscreen.feature_auth.data.dto.request.LoginRequest
 import com.example.splashscreen.feature_auth.data.dto.response.AuthResponse
 import com.example.splashscreen.feature_auth.data.dto.response.BasicApiResponse
+import retrofit2.Response
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface AuthApi {
@@ -18,6 +20,10 @@ interface AuthApi {
     suspend fun login(
         @Body request: LoginRequest
     ): BasicApiResponse<AuthResponse>
+
+    @GET("/api/user/authenticate")
+    suspend fun authenticate()
+//    suspend fun authenticate(): Response<Unit>
 
     companion object {
         const val BASE_URL = "http://10.0.2.2:8001/"

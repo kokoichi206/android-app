@@ -25,6 +25,7 @@ import com.example.splashscreen.presentation.components.StandardTextField
 import com.example.splashscreen.presentation.ui.theme.SpaceLarge
 import com.example.splashscreen.presentation.ui.theme.SpaceMedium
 import com.example.splashscreen.presentation.util.Screen
+import com.example.splashscreen.presentation.util.UiEvent
 import com.example.splashscreen.presentation.util.asString
 import kotlinx.coroutines.flow.collectLatest
 
@@ -42,12 +43,12 @@ fun LoginScreen(
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
             when (event) {
-                is LoginViewModel.UiEvent.SnackbarEvent -> {
+                is UiEvent.SnackbarEvent -> {
                     scaffoldState.snackbarHostState.showSnackbar(
                         message = event.uiText.asString(context)
                     )
                 }
-                is LoginViewModel.UiEvent.Navigate -> {
+                is UiEvent.Navigate -> {
                     navController.navigate(event.route)
                 }
             }

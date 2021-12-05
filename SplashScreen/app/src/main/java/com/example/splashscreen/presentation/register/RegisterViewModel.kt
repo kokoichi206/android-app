@@ -8,6 +8,7 @@ import com.example.splashscreen.R
 import com.example.splashscreen.domain.states.PasswordTextFieldState
 import com.example.splashscreen.domain.states.StandardTextFieldState
 import com.example.splashscreen.feature_auth.domain.usecase.RegisterUseCase
+import com.example.splashscreen.presentation.util.UiEvent
 import com.example.splashscreen.util.Resource
 import com.example.splashscreen.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -109,9 +110,5 @@ class RegisterViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    sealed class UiEvent {
-        data class SnackbarEvent(val uiText: UiText): UiEvent()
     }
 }

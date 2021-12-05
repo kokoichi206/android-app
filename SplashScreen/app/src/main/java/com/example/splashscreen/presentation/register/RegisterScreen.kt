@@ -24,6 +24,7 @@ import com.example.splashscreen.presentation.register.RegisterState
 import com.example.splashscreen.presentation.register.RegisterViewModel
 import com.example.splashscreen.presentation.ui.theme.SpaceLarge
 import com.example.splashscreen.presentation.ui.theme.SpaceMedium
+import com.example.splashscreen.presentation.util.UiEvent
 import com.example.splashscreen.presentation.util.asString
 import com.example.splashscreen.util.Constants
 import com.example.splashscreen.util.UiText
@@ -44,7 +45,7 @@ fun RegisterScreen(
     LaunchedEffect(key1 = true) {
         viewModel.eventFlow.collectLatest { event ->
             when(event) {
-                is RegisterViewModel.UiEvent.SnackbarEvent -> {
+                is UiEvent.SnackbarEvent -> {
                     scaffoldState.snackbarHostState.showSnackbar(
                         event.uiText.asString(context),
                         duration = SnackbarDuration.Long

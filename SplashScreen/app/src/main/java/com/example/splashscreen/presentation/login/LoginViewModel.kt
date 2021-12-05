@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.splashscreen.domain.states.StandardTextFieldState
 import com.example.splashscreen.feature_auth.domain.usecase.LoginUseCase
 import com.example.splashscreen.presentation.util.Screen
+import com.example.splashscreen.presentation.util.UiEvent
 import com.example.splashscreen.util.Resource
 import com.example.splashscreen.util.UiText
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -86,10 +87,5 @@ class LoginViewModel @Inject constructor(
                 }
             }
         }
-    }
-
-    sealed class UiEvent {
-        data class SnackbarEvent(val uiText: UiText): UiEvent()
-        data class Navigate(val route: String): UiEvent()
     }
 }
