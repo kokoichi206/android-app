@@ -7,7 +7,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.Composable
@@ -24,7 +23,8 @@ import com.example.splashscreen.presentation.components.UserProfileItem
 import com.example.splashscreen.presentation.ui.theme.IconSizeMedium
 import com.example.splashscreen.presentation.ui.theme.SpaceLarge
 import com.example.splashscreen.presentation.ui.theme.SpaceMedium
-import com.example.splashscreen.presentation.util.states.StandardTextFieldState
+import com.example.splashscreen.domain.states.StandardTextFieldState
+import com.example.splashscreen.presentation.edit_profile.util.EditProfileError
 
 @ExperimentalMaterialApi
 @Composable
@@ -56,7 +56,7 @@ fun SearchScreen(
                     .fillMaxWidth(),
                 text = viewModel.searchState.value.text,
                 hint = stringResource(id = R.string.search),
-                error = viewModel.searchState.value.error,
+                error = "",
                 leadingIcon = Icons.Default.Search,
                 onValueChange = {
                     viewModel.setSearchState(

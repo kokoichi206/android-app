@@ -4,15 +4,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.withStyle
@@ -20,17 +20,41 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.splashscreen.R
+import com.example.splashscreen.feature_auth.domain.models.AuthError
 import com.example.splashscreen.presentation.components.StandardTextField
 import com.example.splashscreen.presentation.ui.theme.SpaceLarge
 import com.example.splashscreen.presentation.ui.theme.SpaceMedium
-import com.example.splashscreen.presentation.ui.theme.SpaceSmall
 import com.example.splashscreen.presentation.util.Screen
+import com.example.splashscreen.presentation.util.UiEvent
+import com.example.splashscreen.presentation.util.asString
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun LoginScreen(
     navController: NavController,
+    scaffoldState: ScaffoldState,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
+    val emailState = viewModel.emailState.value
+    val passwordState = viewModel.passwordState.value
+    val state = viewModel.loginState.value
+    val context = LocalContext.current
+
+    LaunchedEffect(key1 = true) {
+        viewModel.eventFlow.collectLatest { event ->
+            when (event) {
+                is UiEvent.SnackbarEvent -> {
+                    scaffoldState.snackbarHostState.showSnackbar(
+                        message = event.uiText.asString(context)
+                    )
+                }
+                is UiEvent.Navigate -> {
+                    navController.navigate(event.route)
+                }
+            }
+        }
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -53,32 +77,38 @@ fun LoginScreen(
             )
             Spacer(modifier = Modifier.height(SpaceMedium))
             StandardTextField(
-                text = viewModel.usernameText.value,
+                text = emailState.text,
                 onValueChange = {
-                    viewModel.setUsernameText(it)
+                    viewModel.onEvent(LoginEvent.EnteredEmail(it))
                 },
                 keyboardType = KeyboardType.Email,
-                error = viewModel.usernameError.value,
+                error = when (emailState.error) {
+                    is AuthError.FieldEmpty -> stringResource(id = R.string.this_field_cant_be_empty)
+                    else -> ""
+                },
                 hint = stringResource(id = R.string.login_hint)
             )
             Spacer(modifier = Modifier.height(SpaceMedium))
             StandardTextField(
-                text = viewModel.passwordText.value,
+                text = passwordState.text,
                 onValueChange = {
-                    viewModel.setPasswordText(it)
+                    viewModel.onEvent(LoginEvent.EnteredPassword(it))
                 },
                 hint = stringResource(id = R.string.password_hint),
                 keyboardType = KeyboardType.Password,
-                error = viewModel.passwordError.value,
-                showPasswordToggle = viewModel.showPassword.value,
+                error = when (passwordState.error) {
+                    is AuthError.FieldEmpty -> stringResource(id = R.string.this_field_cant_be_empty)
+                    else -> ""
+                },
+                showPasswordToggle = state.isPasswordVisible,
                 onPasswordToggleClick = {
-                    viewModel.setShowPassword(it)
+                    viewModel.onEvent(LoginEvent.TogglePasswordVisibility)
                 }
             )
             Spacer(modifier = Modifier.height(SpaceMedium))
             Button(
                 onClick = {
-                    navController.navigate(Screen.MainFeedScreen.route)
+                    viewModel.onEvent(LoginEvent.Login)
                 },
                 modifier = Modifier
                     .align(Alignment.End)

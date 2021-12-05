@@ -13,15 +13,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.painterResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.example.splashscreen.R
 import com.example.splashscreen.presentation.util.Screen
+import com.example.splashscreen.presentation.util.UiEvent
 import com.example.splashscreen.util.Constants.SPLASH_SCREEN_DURATION
 import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.collectLatest
 
 @Composable
 fun SplashScreen(
     navController: NavController,
+    viewModel: SplashViewModel = hiltViewModel(),
     dispatcher: CoroutineDispatcher = Dispatchers.Main
 ) {
     val scale = remember {
@@ -42,8 +46,16 @@ fun SplashScreen(
                 )
             )
             delay(SPLASH_SCREEN_DURATION)
-            navController.popBackStack()
-            navController.navigate(Screen.LoginScreen.route)
+        }
+    }
+    LaunchedEffect(key1 = true) {
+        viewModel.eventFlow.collectLatest { event ->
+            when(event) {
+                is UiEvent.Navigate -> {
+                    navController.popBackStack()
+                    navController.navigate(event.route)
+                }
+            }
         }
     }
     Box(

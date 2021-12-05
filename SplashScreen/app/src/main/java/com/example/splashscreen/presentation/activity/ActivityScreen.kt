@@ -1,6 +1,5 @@
 package com.example.splashscreen.presentation.activity
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.MaterialTheme
@@ -15,9 +14,9 @@ import com.example.splashscreen.R
 import com.example.splashscreen.domain.models.Activity
 import com.example.splashscreen.domain.util.ActivityAction
 import com.example.splashscreen.domain.util.DateFormatUtil
+import com.example.splashscreen.presentation.activity.components.ActivityItem
 import com.example.splashscreen.presentation.components.StandardToolbar
 import com.example.splashscreen.presentation.ui.theme.SpaceMedium
-import com.example.splashscreen.presentation.ui.theme.SpaceSmall
 import kotlin.random.Random
 
 @Composable

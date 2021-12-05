@@ -39,7 +39,9 @@ import com.example.splashscreen.presentation.edit_profile.components.Chip
 import com.example.splashscreen.presentation.ui.theme.ProfilePictureSizeLarge
 import com.example.splashscreen.presentation.ui.theme.SpaceLarge
 import com.example.splashscreen.presentation.ui.theme.SpaceMedium
-import com.example.splashscreen.presentation.util.states.StandardTextFieldState
+import com.example.splashscreen.domain.states.StandardTextFieldState
+import com.example.splashscreen.presentation.create_post.PostDescriptionError
+import com.example.splashscreen.presentation.edit_profile.util.EditProfileError
 import com.google.accompanist.flowlayout.FlowRow
 import com.google.accompanist.flowlayout.MainAxisAlignment
 import kotlin.random.Random
@@ -97,7 +99,12 @@ fun EditProfileScreen(
                         .fillMaxWidth(),
                     text = viewModel.usernameState.value.text,
                     hint = stringResource(id = R.string.username),
-                    error = viewModel.usernameState.value.error,
+                    error = when (viewModel.usernameState.value.error) {
+                        is EditProfileError.FieldEmpty -> {
+                            stringResource(id = R.string.this_field_cant_be_empty)
+                        }
+                        else -> "'"
+                    },
                     leadingIcon = Icons.Default.Person,
                     onValueChange = {
                         viewModel.setUsernameState(
@@ -111,7 +118,12 @@ fun EditProfileScreen(
                         .fillMaxWidth(),
                     text = viewModel.githubTextFieldState.value.text,
                     hint = stringResource(id = R.string.github_profile_url),
-                    error = viewModel.githubTextFieldState.value.error,
+                    error = when (viewModel.githubTextFieldState.value.error) {
+                        is EditProfileError.FieldEmpty -> {
+                            stringResource(id = R.string.this_field_cant_be_empty)
+                        }
+                        else -> "'"
+                    },
                     leadingIcon = ImageVector.vectorResource(id = R.drawable.ic_github_icon_1),
                     onValueChange = {
                         viewModel.setUsernameState(
@@ -125,7 +137,12 @@ fun EditProfileScreen(
                         .fillMaxWidth(),
                     text = viewModel.instagramTextFieldState.value.text,
                     hint = stringResource(id = R.string.instegram_profile_url),
-                    error = viewModel.githubTextFieldState.value.error,
+                    error = when (viewModel.instagramTextFieldState.value.error) {
+                        is EditProfileError.FieldEmpty -> {
+                            stringResource(id = R.string.this_field_cant_be_empty)
+                        }
+                        else -> "'"
+                    },
                     leadingIcon = ImageVector.vectorResource(id = R.drawable.ic_instagram_glyph_1),
                     onValueChange = {
                         viewModel.setInstagramTextFieldState(
@@ -139,7 +156,12 @@ fun EditProfileScreen(
                         .fillMaxWidth(),
                     text = viewModel.linkedInTextFieldState.value.text,
                     hint = stringResource(id = R.string.linked_in_profile_url),
-                    error = viewModel.linkedInTextFieldState.value.error,
+                    error = when (viewModel.linkedInTextFieldState.value.error) {
+                        is EditProfileError.FieldEmpty -> {
+                            stringResource(id = R.string.this_field_cant_be_empty)
+                        }
+                        else -> "'"
+                    },
                     leadingIcon = ImageVector.vectorResource(id = R.drawable.ic_linkedin_icon_1),
                     onValueChange = {
                         viewModel.setLinkedInTextFieldState(
@@ -153,7 +175,12 @@ fun EditProfileScreen(
                         .fillMaxWidth(),
                     text = viewModel.bioState.value.text,
                     hint = stringResource(id = R.string.your_bio),
-                    error = viewModel.bioState.value.error,
+                    error = when (viewModel.bioState.value.error) {
+                        is EditProfileError.FieldEmpty -> {
+                            stringResource(id = R.string.this_field_cant_be_empty)
+                        }
+                        else -> "'"
+                    },
                     singleLine = false,
                     maxLines = 3,
                     leadingIcon = Icons.Default.Description,

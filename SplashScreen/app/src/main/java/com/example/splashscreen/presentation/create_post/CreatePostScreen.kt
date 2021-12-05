@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.runtime.Composable
@@ -22,8 +21,7 @@ import com.example.splashscreen.presentation.components.StandardTextField
 import com.example.splashscreen.presentation.components.StandardToolbar
 import com.example.splashscreen.presentation.ui.theme.SpaceLarge
 import com.example.splashscreen.presentation.ui.theme.SpaceMedium
-import com.example.splashscreen.presentation.ui.theme.SpaceSmall
-import com.example.splashscreen.presentation.util.states.StandardTextFieldState
+import com.example.splashscreen.domain.states.StandardTextFieldState
 
 @Composable
 fun CreatePostScreen(
@@ -33,7 +31,8 @@ fun CreatePostScreen(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        StandardToolbar(navController = navController,
+        StandardToolbar(
+            navController = navController,
             showBackArrow = true,
             title = {
                 Text(
@@ -44,10 +43,10 @@ fun CreatePostScreen(
             },
         )
         Column(
-          modifier = Modifier
-              .fillMaxSize()
-              .padding(SpaceLarge)
-        ){
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(SpaceLarge)
+        ) {
             Box(
                 modifier = Modifier
                     .aspectRatio(16f / 9f)
@@ -73,7 +72,12 @@ fun CreatePostScreen(
                     .fillMaxWidth(),
                 text = viewModel.descriptionState.value.text,
                 hint = stringResource(id = R.string.description),
-                error = viewModel.descriptionState.value.error,
+                error = when (viewModel.descriptionState.value.error) {
+                    is PostDescriptionError.FieldEmpty -> {
+                        stringResource(id = R.string.this_field_cant_be_empty)
+                    }
+                    else -> ""
+                },
                 singleLine = false,
                 maxLines = 5,
                 leadingIcon = Icons.Default.Description,

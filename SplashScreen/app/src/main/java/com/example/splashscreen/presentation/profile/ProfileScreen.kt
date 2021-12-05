@@ -44,8 +44,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
 ) {
     val lazyListState = rememberLazyListState()
-    var toolBarOffsetY = viewModel.toolbarOffsetY.value
-    var expandedRatio = viewModel.expandedRatio.value
+    val toolBarState = viewModel.toolbarState.value
 
     val iconHorizontalCenterLength =
         (LocalConfiguration.current.screenWidthDp.dp.toPx() / 4f -
@@ -79,13 +78,13 @@ fun ProfileScreen(
                 if (delta > 0f && lazyListState.firstVisibleItemIndex != 0) {
                     return Offset.Zero
                 }
-                val newOffset = toolBarOffsetY + delta
-                toolBarOffsetY = newOffset.coerceIn(
+                val newOffset = viewModel.toolbarState.value.toolbarOffsetY + delta
+                viewModel.setToolbarOffsetY(newOffset.coerceIn(
                     minimumValue = -maxOffset.toPx(),
                     maximumValue = 0f
-                )
+                ))
 //                totalToolbarOffsetY += toolBarOffsetY
-                expandedRatio = ((toolBarOffsetY + maxOffset.toPx()) / maxOffset.toPx())
+                viewModel.setExpandedRatio((viewModel.toolbarState.value.toolbarOffsetY + maxOffset.toPx()) / maxOffset.toPx())
                 return Offset.Zero
 //                return Offset(x = 0f, y = available.y * 0.5f)
             }
@@ -153,23 +152,23 @@ fun ProfileScreen(
             BannerSection(
                 modifier = Modifier
                     .height(
-                        (bannerHeight * expandedRatio).coerceIn(
+                        (bannerHeight * toolBarState.expandedRatio).coerceIn(
                             minimumValue = toolbarHeightCollapsed,
                             maximumValue = bannerHeight
                         )
                     ),
                 leftIconModifier = Modifier
                     .graphicsLayer {
-                        translationY = (1f - expandedRatio) *
+                        translationY = (1f - toolBarState.expandedRatio) *
                                 -iconCollapsedOffsetY.toPx()
-                        translationX = (1f - expandedRatio) *
+                        translationX = (1f - toolBarState.expandedRatio) *
                                 iconHorizontalCenterLength
                     },
                 rightIconModifier = Modifier
                     .graphicsLayer {
-                        translationY = (1f - expandedRatio) *
+                        translationY = (1f - toolBarState.expandedRatio) *
                                 -iconCollapsedOffsetY.toPx()
-                        translationX = (1f - expandedRatio) *
+                        translationX = (1f - toolBarState.expandedRatio) *
                                 -iconHorizontalCenterLength
                     },
             )
@@ -180,12 +179,12 @@ fun ProfileScreen(
                     .align(CenterHorizontally)
                     .graphicsLayer {
                         translationY = -profilePictureSize.toPx() / 2f -
-                                (1f - expandedRatio) * imageCollapsedOffsetY.toPx()
+                                (1f - toolBarState.expandedRatio) * imageCollapsedOffsetY.toPx()
                         transformOrigin = TransformOrigin(
                             pivotFractionX = 0.5f,
                             pivotFractionY = 0f
                         )
-                        val scale = 0.5f * (1 + expandedRatio)
+                        val scale = 0.5f * (1 + toolBarState.expandedRatio)
                         scaleX = scale
                         scaleY = scale
                     }
