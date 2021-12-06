@@ -1,11 +1,10 @@
 package com.example.splashscreen.feature_auth.data.repository
 
 import android.content.SharedPreferences
-import androidx.compose.ui.graphics.vector.RenderVectorGroup
 import com.example.splashscreen.R
 import com.example.splashscreen.feature_auth.data.dto.request.CreateAccountRequest
 import com.example.splashscreen.feature_auth.data.dto.request.LoginRequest
-import com.example.splashscreen.feature_auth.data.remote.AuthApi
+import com.example.splashscreen.feature_auth.data.data_source.remote.AuthApi
 import com.example.splashscreen.feature_auth.domain.repository.AuthRepository
 import com.example.splashscreen.util.Constants
 import com.example.splashscreen.util.Resource

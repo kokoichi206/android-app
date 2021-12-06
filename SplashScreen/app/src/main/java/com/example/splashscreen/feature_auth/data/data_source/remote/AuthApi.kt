@@ -1,10 +1,9 @@
-package com.example.splashscreen.feature_auth.data.remote
+package com.example.splashscreen.feature_auth.data.data_source.remote
 
 import com.example.splashscreen.feature_auth.data.dto.request.CreateAccountRequest
 import com.example.splashscreen.feature_auth.data.dto.request.LoginRequest
 import com.example.splashscreen.feature_auth.data.dto.response.AuthResponse
 import com.example.splashscreen.feature_auth.data.dto.response.BasicApiResponse
-import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.POST

@@ -1,7 +1,7 @@
 package com.example.splashscreen.di
 
 import android.content.SharedPreferences
-import com.example.splashscreen.feature_auth.data.remote.AuthApi
+import com.example.splashscreen.feature_auth.data.data_source.remote.AuthApi
 import com.example.splashscreen.feature_auth.data.repository.AuthRepositoryImpl
 import com.example.splashscreen.feature_auth.domain.repository.AuthRepository
 import com.example.splashscreen.feature_auth.domain.usecase.AuthenticateUseCase
