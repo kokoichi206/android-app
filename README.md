@@ -22,3 +22,5 @@ Samples
 | <br>Kotlin <br>**Jetpack compose**<br><br> • MVVM<br> • Jetpack Compose<br> • API access (refrofit)<br> • API test<br> • Room DAO<br> • Uses [Hilt](https://dagger.dev/hilt/) for dependency injection<br><br>**[> Browse](MyApplication/app/src/main)** | <img src="readme/screenshots/coins.png" width="160"> |  
 |  |  |  
 | <br>Kotlin <br>**Jetpack compose**<br><br> • Jetpack Compose<br> • Splash Screen<br> • Custom font<br> • UI tests<br><br>**[> Browse](SplashScreen/app/src/main)** | <img src="readme/splash.gif" width="160"> |  
+|  |  |  
+| <br>Kotlin <br>**Jetpack compose**<br><br> • [Jetpack Glance](https://developer.android.com/jetpack/androidx/releases/glance?hl=ja)<br> • Widget by Jetpack<br> • Similar to Jetpack Compose<br><br>**[> Browse](JetpackGlance/app/src/main)** | <img src="readme/widget.gif" width="160"> |  
