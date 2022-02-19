@@ -2,8 +2,10 @@ package jp.mydns.kokoichi0206.dragdrop
 
 import android.os.Bundle
 import android.util.Log
+import android.util.Size
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.*
@@ -52,6 +54,16 @@ fun DraggableBox() {
 
         val BOX_SIZE = 50.dp
         val BOX_SIZE_PX = with(LocalDensity.current) { BOX_SIZE.toPx() }
+
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val canvasSize = size
+            val canvasWidth = size.width
+            val canvasHeight = size.height
+            drawRect(
+                color = Color.Green,
+                size = Size()
+            )
+        }
 
         Box(
             Modifier
