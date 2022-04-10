@@ -1,7 +1,11 @@
 package jp.mydns.kokoichi0206.videoplayer
 
 import android.annotation.SuppressLint
+import android.content.Context
+import android.net.Uri
 import android.os.Bundle
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Spacer
@@ -16,12 +20,17 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.exoplayer2.MediaItem
 import com.google.android.exoplayer2.SimpleExoPlayer
+import com.google.android.exoplayer2.source.ProgressiveMediaSource
 import com.google.android.exoplayer2.ui.PlayerView
+import com.google.android.exoplayer2.upstream.DataSource
+import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory
+import com.google.android.exoplayer2.util.Util
 import jp.mydns.kokoichi0206.videoplayer.ui.theme.VideoPlayerTheme
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -39,6 +48,46 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+@Composable
+fun VideoView(context: Context, mediaUri: Uri) {
+    val exoPlayer = remember(context) {
+        SimpleExoPlayer.Builder(context).build().apply {
+            val dataSourceFactory: DataSource.Factory = DefaultDataSourceFactory(context,
+                Util.getUserAgent(context, context.packageName))
+
+            val source = ProgressiveMediaSource.Factory(dataSourceFactory)
+                .createMediaSource(MediaItem.fromUri(mediaUri))
+            this.prepare(source)
+            this.playWhenReady = true
+        }
+    }
+
+    DisposableEffect(
+        AndroidView(
+            modifier =
+            Modifier.testTag("VideoPlayer"),
+            factory = {
+                PlayerView(context).apply {
+                    player = exoPlayer
+                    layoutParams =
+                        FrameLayout.LayoutParams(
+                            ViewGroup.LayoutParams
+                                .MATCH_PARENT,
+                            ViewGroup.LayoutParams
+                                .WRAP_CONTENT
+                        )
+                }
+            }
+        )
+    ) {
+        onDispose {
+            // relase player when no longer needed
+            exoPlayer.release()
+        }
+    }
+
 }
 
 interface MovieApi {
