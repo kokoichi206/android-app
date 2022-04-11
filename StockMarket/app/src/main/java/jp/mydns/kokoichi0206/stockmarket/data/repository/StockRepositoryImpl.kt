@@ -1,5 +1,6 @@
 package jp.mydns.kokoichi0206.stockmarket.data.repository
 
+import jp.mydns.kokoichi0206.stockmarket.data.csv.CSVParser
 import jp.mydns.kokoichi0206.stockmarket.data.local.StockDatabase
 import jp.mydns.kokoichi0206.stockmarket.data.mapper.toCompanyListing
 import jp.mydns.kokoichi0206.stockmarket.data.remote.StockAPI
@@ -17,6 +18,7 @@ import javax.inject.Singleton
 class StockRepositoryImpl @Inject constructor(
     val api: StockAPI,
     val db: StockDatabase,
+    val companyListingsParser: CSVParser<CompanyListing>,
 ) : StockRepository {
 
     private val dao = db.dao
@@ -42,13 +44,28 @@ class StockRepositoryImpl @Inject constructor(
 
             val remoteListings = try {
                 val response = api.getListings()
-
+                companyListingsParser.parse(response.byteStream())
             } catch (e: IOException) {
                 e.printStackTrace()
                 emit(Resource.Error("Couldn't load data"))
+                null
             } catch (e: HttpException) {
                 e.printStackTrace()
                 emit(Resource.Error("Couldn't load data"))
+                null
+            }
+
+            remoteListings?.let { listings ->
+                dao.clearCompanyListings()
+                dao.insertCompanyListings(
+                    listings.map { it.toCompanyListing() }
+                )
+                emit(Resource.Success(
+                    data = dao
+                        .searchCompanyListing("")
+                        .map { it.toCompanyListing() }
+                ))
+//                emit(Resource.Loading(false))
             }
         }
     }
