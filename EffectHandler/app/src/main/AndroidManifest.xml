@@ -3,6 +3,7 @@
     package="jp.mydns.kokoichi0206.effecthandler">
 
     <uses-permission android:name="android.permission.ACTIVITY_RECOGNITION" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:name=".SensorApp"
