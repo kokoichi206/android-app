@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.TextView
 import androidx.lifecycle.lifecycleScope
+import jp.mydns.kokoichi0206.coroutines.databinding.ActivityMainBinding
 import kotlinx.coroutines.*
 import kotlin.system.measureTimeMillis
 
@@ -13,9 +14,15 @@ class MainActivity : AppCompatActivity() {
 
     val TAG = "MainActivity"
 
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        val view = binding.root
+
+        setContentView(view)
 
         val viewModel = MainViewModel()
 
@@ -25,7 +32,7 @@ class MainActivity : AppCompatActivity() {
             it.text = "hoge"
         }
 
-        findViewById<TextView>(R.id.hiWorld).apply {
+        binding.hiWorld.apply {
             setOnClickListener {
                 // GlobalScope will not be destroyed
                 //GlobalScope.launch {
