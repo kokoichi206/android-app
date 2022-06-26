@@ -19,9 +19,105 @@ fun main() {
 
     whenExpression()
 
+    val example = ExampleClass()
+    example.speed = 3
+
+    val user = User(1, "me")
+    val updatedUser = user.copy(name = "new name")
+    val (a, b) = updatedUser    // おぉ
+
+    val person = Person(80.0F)
+
+    // safe type cast
+    val obj: Any = 1031
+    val strObj: String? = obj as? String
+
+    // array
+    val numbers = arrayOf(1, 2, 3, 4, 5, 6)
+    print(numbers.contentToString())
+
+    // list
+    val users = listOf(
+        User(1, "a"),
+        User(2, "b"),
+        User(3, "c"),
+        User(4, "d"),
+        User(5, "e"),
+    )
+    // lists have many properties
+    val anyTypesList = listOf(1, 2, true, "string value", User(1, "hoge"))
+
+    val mutableUsers = users.toMutableList()
+    val newUsers = arrayOf(User(6, "newbees"))
+    mutableUsers.addAll(newUsers)
+    mutableUsers.removeAt(4)
+    println(mutableUsers)
+    // This causes the 'IndexOutOfBoundsException'
+    // mutableUsers.removeAt(41)
+    mutableUsers.sortWith(compareBy<User> { it.name }.thenBy { it.id })
+
+    // map
+    val daysOfWeek = mapOf(
+        1 to "Monday",
+        2 to "Tuesday",
+        3 to "Wednesday",
+    )
+    for (key in daysOfWeek.keys) {
+        println("$key is mapped to ${daysOfWeek[key]}")
+    }
+
+    // arraylists
+    val arrayList = ArrayList<String>()
+    val itr = arrayList.iterator()
+    while (itr.hasNext()) {
+        println(itr.next())
+    }
+
+    // Lambda
+//    val sum: (Int, Int) -> Int = {a: Int, b: Int -> a + b}
+//    println(sum(10, 5))
+    val sum = { a: Int, b: Int -> println(a + b) }
 }
 
-fun addOne(a: Int) : Int {
+interface Drivable {
+    // interface can define member variables...?
+    val maxSpeed: Double
+    fun drive(): String
+
+    // interface can define function with a concrete impl...?
+    fun brake() {
+        println("Braking !!!")
+    }
+}
+
+open class Animal(
+    val life: Float,
+) {
+    fun eat() {
+    }
+}
+
+class Person(
+    life: Float,
+) : Animal(
+    life = life,
+) {
+}
+
+data class User(
+    val id: Int,
+    val name: String,
+)
+
+class ExampleClass() {
+    var speed: Int = 100
+        get() = field
+        set(value) {
+            field = if (value > 0) value else throw IllegalArgumentException("Not sutable")
+        }
+}
+
+fun addOne(a: Int): Int {
     return a + 1
 }
 
