@@ -1,5 +1,6 @@
 package jp.mydns.kokoichi0206.gmail
 
+import jp.mydns.kokoichi0206.gmail.model.Account
 import jp.mydns.kokoichi0206.gmail.model.MailData
 
 val mailList = listOf(
@@ -107,5 +108,24 @@ val mailList = listOf(
         subject = "Email regarding something urgent",
         body = "Your credit card is out of date",
         timeStamp = "12:34",
+    ),
+)
+
+val accountList = listOf(
+    Account(
+        icon = R.drawable.logo,
+        userName = "John Doe",
+        email = "doe.1031.@gmail.com",
+        unReadMails = 99
+    ),
+    Account(
+        userName = "Pien Doe",
+        email = "doe.paon.@gmail.com",
+        unReadMails = 5
+    ),
+    Account(
+        userName = "Paon Doe",
+        email = "doe.pien.@gmail.com",
+        unReadMails = 23
     ),
 )
