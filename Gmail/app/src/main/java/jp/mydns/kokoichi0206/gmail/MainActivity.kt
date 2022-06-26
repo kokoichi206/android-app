@@ -11,6 +11,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import jp.mydns.kokoichi0206.gmail.components.DrawableMenu
 import jp.mydns.kokoichi0206.gmail.components.HomeAppBar
+import jp.mydns.kokoichi0206.gmail.components.HomeBottomMenu
+import jp.mydns.kokoichi0206.gmail.components.MailList
 import jp.mydns.kokoichi0206.gmail.ui.theme.GmailTheme
 
 class MainActivity : ComponentActivity() {
@@ -48,7 +50,12 @@ fun GmailApp() {
                 scrollState = scrollState,
             )
         },
+        bottomBar = {
+            HomeBottomMenu()
+        },
     ) {
-
+        // Can use 'it' as PaddingValues !!!
+        // Bottom bar height !
+        MailList(paddingValues = it)
     }
 }

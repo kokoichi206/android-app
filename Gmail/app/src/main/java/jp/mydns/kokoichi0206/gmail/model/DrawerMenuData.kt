@@ -1,7 +1,6 @@
-package jp.mydns.kokoichi0206.gmail
+package jp.mydns.kokoichi0206.gmail.model
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.ui.graphics.vector.ImageVector
 

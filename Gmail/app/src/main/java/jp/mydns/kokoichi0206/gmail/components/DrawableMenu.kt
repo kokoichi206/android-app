@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import jp.mydns.kokoichi0206.gmail.DrawerMenuData
+import jp.mydns.kokoichi0206.gmail.model.DrawerMenuData
 
 @Composable
 fun DrawableMenu(
