@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.navigation.*
 import androidx.navigation.compose.NavHost
@@ -13,20 +14,25 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import jp.mydns.kokoichi0206.newsapp.components.BottomMenu
 import jp.mydns.kokoichi0206.newsapp.models.TopNewsArticle
+import jp.mydns.kokoichi0206.newsapp.network.Api
 import jp.mydns.kokoichi0206.newsapp.network.NewsManager
 import jp.mydns.kokoichi0206.newsapp.screen.*
+import jp.mydns.kokoichi0206.newsapp.ui.MainViewModel
 
 @Composable
-fun News() {
+fun News(
+    mainViewModel: MainViewModel,
+) {
     val scrollState = rememberScrollState()
     val navController = rememberNavController()
-    MainScreen(navController = navController, scrollState = scrollState)
+    MainScreen(navController = navController, scrollState = scrollState, mainViewModel = mainViewModel)
 }
 
 @Composable
 fun MainScreen(
     navController: NavHostController,
     scrollState: ScrollState,
+    mainViewModel: MainViewModel,
 ) {
     Scaffold(
         bottomBar = {
@@ -37,6 +43,7 @@ fun MainScreen(
             navController = navController,
             scrollState = scrollState,
             paddingValues = it,
+            viewModel = mainViewModel
         )
     }
 }
@@ -45,12 +52,15 @@ fun MainScreen(
 fun Navigation(
     navController: NavHostController,
     scrollState: ScrollState,
-    newsManager: NewsManager = NewsManager(),
+    newsManager: NewsManager = NewsManager(Api.retrofitService),
     paddingValues: PaddingValues,
+    viewModel: MainViewModel,
 ) {
-    val articles = newsManager.newsResponse.value.articles
+    val articles = mutableListOf(TopNewsArticle())
+    val topArticles = viewModel.newsResponse.collectAsState().value.articles
+    articles.addAll(topArticles ?: listOf())
 
-    articles?.let {
+    articles.let {
         NavHost(
             navController = navController,
             startDestination = BottomMenuScreen.TopNews.route,
