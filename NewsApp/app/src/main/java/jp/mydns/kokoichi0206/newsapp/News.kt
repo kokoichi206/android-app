@@ -7,6 +7,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
 import androidx.navigation.*
 import androidx.navigation.compose.NavHost
@@ -56,6 +59,9 @@ fun Navigation(
     paddingValues: PaddingValues,
     viewModel: MainViewModel,
 ) {
+    val loading by viewModel.isLoading.collectAsState()
+    val error by viewModel.isError.collectAsState()
+    val errorMsg by viewModel.errorMessage.collectAsState()
     val articles = mutableListOf(TopNewsArticle())
     val topArticles = viewModel.newsResponse.collectAsState().value.articles
     articles.addAll(topArticles ?: listOf())
@@ -67,8 +73,17 @@ fun Navigation(
             modifier = Modifier
                 .padding(paddingValues = paddingValues)
         ) {
+            val isLoading = mutableStateOf(loading)
+            val isError = mutableStateOf(error)
+            val errorMessage = mutableStateOf(errorMsg)
             // Use extended one !
-            bottomNavigation(navController = navController, articles = articles)
+            bottomNavigation(
+                navController = navController,
+                articles = articles,
+                isLoading = isLoading,
+                isError = isError,
+                errorMessage = errorMessage,
+            )
 
             composable(
                 route = "${Screen.Detailed.route}/{index}",
@@ -89,9 +104,21 @@ fun Navigation(
 }
 
 // Extend navgraphbuilder !!!!
-fun NavGraphBuilder.bottomNavigation(navController: NavController, articles: List<TopNewsArticle>) {
+fun NavGraphBuilder.bottomNavigation(
+    navController: NavController,
+    articles: List<TopNewsArticle>,
+    isLoading: MutableState<Boolean>,
+    isError: MutableState<Boolean>,
+    errorMessage: MutableState<String>,
+) {
     composable(BottomMenuScreen.TopNews.route) {
-        TopNews(navController = navController, articles = articles)
+        TopNews(
+            navController = navController,
+            articles = articles,
+            isLoading = isLoading,
+            isError = isError,
+            errorMessage = errorMessage,
+        )
     }
 
     composable(BottomMenuScreen.Categories.route) {
