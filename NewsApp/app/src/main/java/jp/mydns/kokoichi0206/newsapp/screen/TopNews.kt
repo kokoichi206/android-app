@@ -12,18 +12,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.skydoves.landscapist.coil.CoilImage
 import jp.mydns.kokoichi0206.newsapp.MockData
 import jp.mydns.kokoichi0206.newsapp.MockData.getTimeAgo
-import jp.mydns.kokoichi0206.newsapp.NewsData
+import jp.mydns.kokoichi0206.newsapp.R
+import jp.mydns.kokoichi0206.newsapp.models.TopNewsArticle
 
 @Composable
 fun TopNews(
     navController: NavController,
+    articles: List<TopNewsArticle>,
 ) {
     Column(
         modifier = Modifier
@@ -33,11 +38,11 @@ fun TopNews(
         Text(text = "Top News", fontWeight = FontWeight.SemiBold)
 
         LazyColumn {
-            items(MockData.topNewsList) { item ->
+            items(articles.size) { index ->
                 TopNewsItem(
-                    newsData = item,
+                    article = articles[index],
                     onNewsClick = {
-                        navController.navigate("${Screen.Detailed.route}/${item.id}")
+                        navController.navigate("${Screen.Detailed.route}/$index")
                     }
                 )
             }
@@ -47,7 +52,7 @@ fun TopNews(
 
 @Composable
 fun TopNewsItem(
-    newsData: NewsData,
+    article: TopNewsArticle,
     onNewsClick: () -> Unit = {},
 ) {
     Box(
@@ -62,10 +67,11 @@ fun TopNewsItem(
                 onNewsClick()
             }
     ) {
-        Image(
-            painter = painterResource(id = newsData.image),
-            contentDescription = "",
-            contentScale = ContentScale.FillBounds,
+        CoilImage(
+            imageModel = article.urlToImage,
+            contentScale = ContentScale.Crop,
+            error = ImageBitmap.imageResource(id = R.drawable.ic_launcher_background),
+            placeHolder = ImageBitmap.imageResource(id = R.drawable.ic_launcher_background),
         )
         Column(
             modifier = Modifier
@@ -74,13 +80,13 @@ fun TopNewsItem(
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(
-                text = MockData.stringToDate(newsData.publishedAt).getTimeAgo(),
+                text = MockData.stringToDate(article.publishedAt!!).getTimeAgo(),
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold,
             )
             Spacer(modifier = Modifier.height(80.dp))
             Text(
-                text = newsData.title,
+                text = article.title!!,
                 color = Color.White,
                 fontWeight = FontWeight.SemiBold,
             )

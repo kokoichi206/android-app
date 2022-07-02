@@ -1,14 +1,19 @@
 package jp.mydns.kokoichi0206.newsapp
 
 import androidx.compose.foundation.ScrollState
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.navigation.*
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import jp.mydns.kokoichi0206.newsapp.components.BottomMenu
+import jp.mydns.kokoichi0206.newsapp.models.TopNewsArticle
+import jp.mydns.kokoichi0206.newsapp.network.NewsManager
 import jp.mydns.kokoichi0206.newsapp.screen.*
 
 @Composable
@@ -31,6 +36,7 @@ fun MainScreen(
         Navigation(
             navController = navController,
             scrollState = scrollState,
+            paddingValues = it,
         )
     }
 }
@@ -39,41 +45,43 @@ fun MainScreen(
 fun Navigation(
     navController: NavHostController,
     scrollState: ScrollState,
+    newsManager: NewsManager = NewsManager(),
+    paddingValues: PaddingValues,
 ) {
+    val articles = newsManager.newsResponse.value.articles
 
-    NavHost(
-        navController = navController,
-        startDestination = BottomMenuScreen.TopNews.route,
-    ) {
-        // Use extended one !
-        bottomNavigation(navController = navController)
+    articles?.let {
+        NavHost(
+            navController = navController,
+            startDestination = BottomMenuScreen.TopNews.route,
+            modifier = Modifier
+                .padding(paddingValues = paddingValues)
+        ) {
+            // Use extended one !
+            bottomNavigation(navController = navController, articles = articles)
 
-        composable(Screen.TopNews.route) {
-            TopNews(
-                navController = navController,
-            )
-        }
-
-        composable(
-            route = "${Screen.Detailed.route}/{newsId}",
-            arguments = listOf(navArgument("newsId") { type = NavType.IntType }),
-        ) { navBackStackEntry ->
-            val id = navBackStackEntry.arguments?.getInt("newsId")
-            val newsData = MockData.getNewsById(id)
-
-            DetailScreen(
-                newsData = newsData,
-                scrollState = scrollState,
-                navController = navController,
-            )
+            composable(
+                route = "${Screen.Detailed.route}/{index}",
+                arguments = listOf(navArgument("index") { type = NavType.IntType }),
+            ) { navBackStackEntry ->
+                val index = navBackStackEntry.arguments?.getInt("index")
+                index?.let {
+                    val article = articles[index]
+                    DetailScreen(
+                        article = article,
+                        scrollState = scrollState,
+                        navController = navController,
+                    )
+                }
+            }
         }
     }
 }
 
 // Extend navgraphbuilder !!!!
-fun NavGraphBuilder.bottomNavigation(navController: NavController) {
+fun NavGraphBuilder.bottomNavigation(navController: NavController, articles: List<TopNewsArticle>) {
     composable(BottomMenuScreen.TopNews.route) {
-        TopNews(navController = navController)
+        TopNews(navController = navController, articles = articles)
     }
 
     composable(BottomMenuScreen.Categories.route) {

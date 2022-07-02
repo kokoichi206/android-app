@@ -13,20 +13,25 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.res.imageResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.skydoves.landscapist.coil.CoilImage
 import jp.mydns.kokoichi0206.newsapp.MockData
 import jp.mydns.kokoichi0206.newsapp.MockData.getTimeAgo
 import jp.mydns.kokoichi0206.newsapp.NewsData
 import jp.mydns.kokoichi0206.newsapp.R
+import jp.mydns.kokoichi0206.newsapp.models.TopNewsArticle
 
 @Composable
 fun DetailScreen(
-    newsData: NewsData,
+    article: TopNewsArticle,
     scrollState: ScrollState,
     navController: NavController,
 ) {
@@ -47,26 +52,29 @@ fun DetailScreen(
         ) {
             Text(text = "Details News", fontWeight = FontWeight.SemiBold)
 
-            Image(
-                painter = painterResource(id = newsData.image),
-                contentDescription = "",
+            CoilImage(
+                imageModel = article.urlToImage,
+                contentScale = ContentScale.Crop,
+                error = ImageBitmap.imageResource(id = R.drawable.ic_launcher_background),
+                placeHolder = ImageBitmap.imageResource(id = R.drawable.ic_launcher_background),
             )
+
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
             ) {
-                InfoWithIcon(icon = Icons.Default.Edit, info = newsData.author)
+                InfoWithIcon(icon = Icons.Default.Edit, info = article.author ?: "Not Available")
                 InfoWithIcon(
                     icon = Icons.Default.DateRange,
-                    info = MockData.stringToDate(newsData.publishedAt).getTimeAgo(),
+                    info = MockData.stringToDate(article.publishedAt!!).getTimeAgo(),
                 )
             }
 
-            Text(text = newsData.title, fontWeight = FontWeight.Bold)
+            Text(text = article.title ?: "Not Available", fontWeight = FontWeight.Bold)
             Text(
-                text = newsData.description,
+                text = article.description ?: "Not Available",
                 modifier = Modifier
                     .padding(top = 16.dp)
             )
