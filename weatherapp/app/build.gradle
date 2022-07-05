@@ -79,4 +79,7 @@ dependencies {
     implementation "com.squareup.okhttp3:logging-interceptor:5.0.0-alpha.3"
 
     implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.5.0"
+
+    // Action bar helper
+    implementation "com.google.accompanist:accompanist-systemuicontroller:0.24.13-rc"
 }

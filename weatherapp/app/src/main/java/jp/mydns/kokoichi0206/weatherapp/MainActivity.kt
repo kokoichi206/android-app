@@ -16,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 import jp.mydns.kokoichi0206.weatherapp.presentation.WeatherCard
 import jp.mydns.kokoichi0206.weatherapp.presentation.WeatherForecast
@@ -47,6 +48,12 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             WeatherAppTheme {
+
+                // Change ActionBar color
+                val systemUiController = rememberSystemUiController()
+                systemUiController.setSystemBarsColor(
+                    color = DarkBlue,
+                )
 
                 Box(
                     modifier = Modifier.fillMaxSize(),
