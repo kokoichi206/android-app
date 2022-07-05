@@ -1,4 +1,4 @@
-package jp.mydns.kokoichi0206.weatherapp.ui.theme
+package jp.mydns.kokoichi0206.weatherapp.presentation.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
