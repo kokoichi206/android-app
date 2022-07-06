@@ -12,7 +12,7 @@ import androidx.compose.ui.unit.sp
 import jp.mydns.kokoichi0206.weatherapp.domain.weather.WeatherData
 
 @Composable
-fun WeatherForecast(
+fun WeatherForecastToday(
     state: WeatherState,
     modifier: Modifier = Modifier,
 ) {

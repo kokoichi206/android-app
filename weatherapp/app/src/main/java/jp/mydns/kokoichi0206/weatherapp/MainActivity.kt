@@ -8,7 +8,11 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.rememberScrollableState
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.ui.Alignment
@@ -19,7 +23,8 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 import jp.mydns.kokoichi0206.weatherapp.presentation.WeatherCard
-import jp.mydns.kokoichi0206.weatherapp.presentation.WeatherForecast
+import jp.mydns.kokoichi0206.weatherapp.presentation.WeatherForecastToday
+import jp.mydns.kokoichi0206.weatherapp.presentation.WeatherForecastWeek
 import jp.mydns.kokoichi0206.weatherapp.presentation.WeatherViewModel
 import jp.mydns.kokoichi0206.weatherapp.presentation.ui.theme.DarkBlue
 import jp.mydns.kokoichi0206.weatherapp.presentation.ui.theme.DeepBlue
@@ -58,18 +63,25 @@ class MainActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                 ) {
+                    // ----- Main -----
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .background(DarkBlue),
+                            .background(DarkBlue)
+                            .verticalScroll(rememberScrollState()),
                     ) {
                         WeatherCard(
                             state = viewModel.state,
                             backgroundColor = DeepBlue,
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                        WeatherForecast(state = viewModel.state)
+                        WeatherForecastToday(state = viewModel.state)
+
+                        Spacer(modifier = Modifier.height(16.dp))
+                        WeatherForecastWeek(state = viewModel.state)
                     }
+
+                    // ----- Additional -----
                     if (viewModel.state.isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center),
