@@ -15,11 +15,14 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import dagger.hilt.android.AndroidEntryPoint
 import jp.mydns.kokoichi0206.weatherapp.presentation.WeatherCard
@@ -53,51 +56,65 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             WeatherAppTheme {
+                val swipeRefreshState = rememberSwipeRefreshState(false)
 
-                // Change ActionBar color
-                val systemUiController = rememberSystemUiController()
-                systemUiController.setSystemBarsColor(
-                    color = DarkBlue,
-                )
-
-                Box(
-                    modifier = Modifier.fillMaxSize(),
+                SwipeRefresh(
+                    state = swipeRefreshState,
+                    onRefresh = {
+                        viewModel.loadWeatherInfo()
+                    },
                 ) {
-                    // ----- Main -----
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(DarkBlue)
-                            .verticalScroll(rememberScrollState()),
-                    ) {
-                        WeatherCard(
-                            state = viewModel.state,
-                            backgroundColor = DeepBlue,
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        WeatherForecastToday(state = viewModel.state)
-
-                        Spacer(modifier = Modifier.height(16.dp))
-                        WeatherForecastWeek(state = viewModel.state)
-                    }
-
-                    // ----- Additional -----
-                    if (viewModel.state.isLoading) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center),
-                        )
-                    }
-                    viewModel.state.error?.let { error ->
-                        Text(
-                            text = error,
-                            color = Color.Red,
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.align(Alignment.Center),
-                        )
-                    }
+                    MainScreen(viewModel = viewModel)
                 }
-
             }
+        }
+    }
+}
+
+@Composable
+fun MainScreen(
+    viewModel: WeatherViewModel,
+) {
+    // Change ActionBar color
+    val systemUiController = rememberSystemUiController()
+    systemUiController.setSystemBarsColor(
+        color = DarkBlue,
+    )
+
+    Box(
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        // ----- Main -----
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(DarkBlue)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            WeatherCard(
+                state = viewModel.state,
+                backgroundColor = DeepBlue,
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            WeatherForecastToday(state = viewModel.state)
+
+            Spacer(modifier = Modifier.height(16.dp))
+            WeatherForecastWeek(state = viewModel.state)
+        }
+
+        // ----- Additional -----
+        if (viewModel.state.isLoading) {
+            CircularProgressIndicator(
+                modifier = Modifier.align(Alignment.Center),
+            )
+        }
+        viewModel.state.error?.let { error ->
+            Text(
+                text = error,
+                color = Color.Red,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.align(Alignment.Center),
+            )
         }
     }
 }
