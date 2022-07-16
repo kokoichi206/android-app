@@ -26,3 +26,5 @@ Samples
 | <br>Kotlin <br>**Jetpack compose**<br><br> • [Jetpack Glance](https://developer.android.com/jetpack/androidx/releases/glance?hl=ja)<br> • Widget by Jetpack<br> • Similar to Jetpack Compose<br><br>**[> Browse](JetpackGlance/app/src/main)** | <img src="readme/widget.gif" width="160"> |  
 |  |  |  
 | <br>Kotlin <br>**Jetpack compose**<br><br> • [android-maps-compose](https://github.com/googlemaps/android-maps-compose)<br> • [Snazzy maps](https://snazzymaps.com/style/87718/fallout-pip-boy)<br>  • Room DB<br> • Hilt DI<br><br>**[> Browse](GoogleMaps/app/src/main)** | <img src="readme/google_map.gif" width="160"> |  
+| <br>Kotlin <br>**Jetpack compose**<br><br>**[> Browse](weatherapp/app/src/main)** | <img src="readme/weatherapp.gif" width="160"> |  
+
