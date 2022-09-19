@@ -77,3 +77,9 @@ android {
         targetSdk = 32
     }
 }
+
+sqldelight {
+    database("AppDatabase") {
+        packageName = "jp.mydns.kokoichi0206.kmmtest.cache"
+    }
+}
