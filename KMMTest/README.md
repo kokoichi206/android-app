@@ -178,8 +178,13 @@ https://developer.android.com/jetpack/compose/interop/adding
 
 ## Hands-on
 
-https://play.kotlinlang.org/hands-on/Networking%20and%20Data%20Storage%20with%20Kotlin%20Multiplatfrom%20Mobile/01_Introductioni
+https://play.kotlinlang.org/hands-on/Networking%20and%20Data%20Storage%20with%20Kotlin%20Multiplatfrom%20Mobile/01_Introduction
 
+- [Introduce cross-platform mobile development to your team](https://kotlinlang.org/docs/multiplatform-mobile-introduce-your-team.html#prepare-for-questions)
+- [What is KMM](https://kotlinlang.org/lp/mobile/)
+- [Concurrency overview](https://kotlinlang.org/docs/multiplatform-mobile-concurrency-overview.html)
+- [Make your Android application work on iOS – tutorial](https://kotlinlang.org/docs/multiplatform-mobile-integrate-in-existing-app.html#add-a-dependency-on-the-shared-module-to-your-android-application)
+    * 既存のアプリをどうするか
 
 ## そのほか
 
