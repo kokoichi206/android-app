@@ -8,6 +8,7 @@
 
 import SwiftUI
 import shared
+import SnapshotSafeView
 
 struct RocketLaunchRow: View {
     var rocketLaunch: RocketLaunch
@@ -22,6 +23,7 @@ struct RocketLaunchRow: View {
             }
             Spacer()
         }
+        .hiddenFromSystemSnaphotWithDefaultPadding(when: true)
     }
 }
 
