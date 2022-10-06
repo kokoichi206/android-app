@@ -10,13 +10,23 @@ import android.provider.MediaStore
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Text
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.ExperimentalTextApi
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import jp.mydns.kokoichi0206.canvas.ui.theme.CanvasTheme
@@ -27,9 +37,13 @@ class MainActivity : ComponentActivity() {
 
     private val REQUEST_CODE = 1
 
+    @OptIn(ExperimentalTextApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
+            val GradientColors = listOf(Color.Red, Color.Yellow, Color.Blue)
+
             CanvasTheme {
                 val snapShot = CaptureBitmap {
                     EditPictureView()
@@ -45,8 +59,19 @@ class MainActivity : ComponentActivity() {
                                 val bitmap = snapShot.invoke()
                                 onClick(bitmap)
                             }
-                        }) {
-                        Text(text = "Capture")
+                        },
+                        colors = ButtonDefaults.buttonColors(backgroundColor = Color.Black),
+                        contentPadding = PaddingValues(4.dp),
+                    ) {
+                        Text(
+                            text = "Capture",
+                            fontSize = 20.sp,
+                            style = TextStyle(
+                                brush = Brush.linearGradient(
+                                    colors = GradientColors
+                                )
+                            ),
+                        )
                     }
                 }
             }
