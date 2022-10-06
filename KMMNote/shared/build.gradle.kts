@@ -59,11 +59,18 @@ kotlin {
     }
 }
 
+sqldelight {
+    database("NoteDatabase") {
+        packageName = "jp.mydns.kokoichi0206.kmmnote.database"
+        sourceFolders = listOf("sqldelight")
+    }
+}
+
 android {
     namespace = "jp.mydns.kokoichi0206.kmmnote"
-    compileSdk = 32
+    compileSdk = 33
     defaultConfig {
         minSdk = 26
-        targetSdk = 32
+        targetSdk = 33
     }
 }
