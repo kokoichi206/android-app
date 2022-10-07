@@ -41,6 +41,7 @@ struct NoteDetailScreen: View {
         .onAppear {
             viewModel.setParamsAndLoadNote(noteDataSource: noteDataSource, noteId: noteId)
         }
+        .navigationBarTitle("")
     }
     
     init(noteDataSource: NoteDatasource, noteId: Int64? = nil) {
