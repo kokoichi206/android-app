@@ -59,6 +59,7 @@ fun Modifier.hoge(): Modifier {
             animation = keyframes {
                 durationMillis = 3000
             },
+            // Reverse or Restart
             repeatMode = RepeatMode.Reverse,
         ),
     )
@@ -77,6 +78,7 @@ fun Modifier.greenBoxRotate(
     duration: Int,
 ): Modifier = composed {
 
+    // この情報を使用するのに composable である必要がある。
     val transition = rememberInfiniteTransition()
     // Float type の animation。
     val angleRatio by transition.animateFloat(
@@ -91,7 +93,8 @@ fun Modifier.greenBoxRotate(
         ),
     )
 
-    return@composed size(size)
+    size(size)
+//        .clip(RectangleShape)
         .graphicsLayer(
             rotationZ = 360f * angleRatio,
             alpha = 1f * angleRatio,
