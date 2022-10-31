@@ -11,8 +11,8 @@ android {
         applicationId "jp.mydns.kokoichi0206.deeplink"
         minSdk 26
         targetSdk 32
-        versionCode 1
-        versionName "1.0"
+        versionCode 103
+        versionName "1.3"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -20,10 +20,34 @@ android {
         }
     }
 
-    buildTypes {
+    signingConfigs {
+        debug {
+            storeFile file('debug-keystore')
+            storePassword "keystore"
+            keyAlias "keystore"
+            keyPassword "keystore"
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+            enableV4Signing = true
+        }
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            storeFile file('release-aab') // 指定パスに配置
+            storePassword "release"
+            keyAlias "release"
+            keyPassword "release"
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+            enableV4Signing = true
+        }
+    }
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            signingConfig signingConfigs.release
         }
     }
     compileOptions {
