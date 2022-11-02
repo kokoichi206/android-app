@@ -1,0 +1,5 @@
+def build_versions = [:]
+build_versions.min_sdk = 21
+build_versions.target_sdk = 31
+build_versions.build_tools = "28.0.3"
+ext.build_versions = build_versions

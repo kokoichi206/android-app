@@ -6,10 +6,10 @@ plugins {
 
 android {
     namespace = "com.example.pokdex.core.data"
-    compileSdkVersion 31
+    compileSdkVersion build_versions.target_sdk
 
     defaultConfig {
-        minSdk 21
+        minSdk build_versions.min_sdk
     }
 }
 
