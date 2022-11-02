@@ -1,4 +1,4 @@
-package com.example.pokdex.pokemondetail
+package jp.mydns.kokoichi0206.pokemondetail
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel

@@ -1,4 +1,4 @@
-package com.example.pokdex.pokemondetail
+package jp.mydns.kokoichi0206.pokemondetail
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
-import com.example.pokdex.R
 import com.example.pokdex.util.parseStatToAbbr
 import com.example.pokdex.util.parseStatToColor
 import com.example.pokdex.util.parseTypeToColor

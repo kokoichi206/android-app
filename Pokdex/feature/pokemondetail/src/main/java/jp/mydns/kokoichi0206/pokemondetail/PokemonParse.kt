@@ -1,7 +1,7 @@
 package com.example.pokdex.util
 
 import androidx.compose.ui.graphics.Color
-import com.example.pokdex.ui.theme.*
+import jp.mydns.kokoichi0206.pokemondetail.ui.theme.*
 import java.util.*
 
 fun parseTypeToColor(type: jp.mydns.kokoichi0206.data.data.remote.responses.Type): Color {
