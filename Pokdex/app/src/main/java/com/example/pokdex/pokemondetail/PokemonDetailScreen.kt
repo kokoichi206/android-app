@@ -2,7 +2,6 @@ package com.example.pokdex.pokemondetail
 
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -22,7 +21,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -32,12 +30,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.pokdex.R
-import com.example.pokdex.data.remote.responses.Pokemon
-import com.example.pokdex.data.remote.responses.Type
-import com.example.pokdex.util.Resource
 import com.example.pokdex.util.parseStatToAbbr
 import com.example.pokdex.util.parseStatToColor
 import com.example.pokdex.util.parseTypeToColor
+import jp.mydns.kokoichi0206.data.data.remote.responses.Pokemon
+import jp.mydns.kokoichi0206.data.util.Resource
 import java.lang.Math.round
 import java.util.*
 
@@ -100,7 +97,7 @@ fun PokemonDetailScreen(
                 pokemonInfo.data?.sprites?.let {
                     Image(
                         painter = rememberImagePainter(data = it.frontDefault),
-                        contentDescription = pokemonInfo.data.name,
+                        contentDescription = pokemonInfo.data?.name,
                         modifier = Modifier
                             .size(pokemonImageSize)
                             .offset(y = topPadding)
@@ -150,7 +147,7 @@ fun PokemonDetailTopSection(
 
 @Composable
 fun PokemonDetailStateWrapper(
-    pokemonInfo: Resource<Pokemon>,
+    pokemonInfo: Resource<jp.mydns.kokoichi0206.data.data.remote.responses.Pokemon>,
     modifier: Modifier = Modifier,
     loadingModifier: Modifier = Modifier
 ) {
@@ -180,7 +177,7 @@ fun PokemonDetailStateWrapper(
 
 @Composable
 fun PokemonDetailSection(
-    pokemonInfo: Pokemon,
+    pokemonInfo: jp.mydns.kokoichi0206.data.data.remote.responses.Pokemon,
     modifier: Modifier = Modifier
 ) {
     val scrollState = rememberScrollState()
@@ -208,7 +205,7 @@ fun PokemonDetailSection(
 }
 
 @Composable
-fun PokemonTypeSection(types: List<Type>) {
+fun PokemonTypeSection(types: List<jp.mydns.kokoichi0206.data.data.remote.responses.Type>) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -355,7 +352,7 @@ fun PokemonStat(
 
 @Composable
 fun PokemonBaseStats(
-    pokemonInfo: Pokemon,
+    pokemonInfo: jp.mydns.kokoichi0206.data.data.remote.responses.Pokemon,
     animDelayPerItem: Int = 100
 ) {
     val maxBaseStat = remember {

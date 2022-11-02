@@ -1,12 +1,10 @@
 package com.example.pokdex.util
 
 import androidx.compose.ui.graphics.Color
-import com.example.pokdex.data.remote.responses.Type
-import com.example.pokdex.data.remote.responses.Stat
 import com.example.pokdex.ui.theme.*
 import java.util.*
 
-fun parseTypeToColor(type: Type): Color {
+fun parseTypeToColor(type: jp.mydns.kokoichi0206.data.data.remote.responses.Type): Color {
     return when(type.type.name.toLowerCase(Locale.ROOT)) {
         "normal" -> TypeNormal
         "fire" -> TypeFire
@@ -30,7 +28,7 @@ fun parseTypeToColor(type: Type): Color {
     }
 }
 
-fun parseStatToColor(stat: Stat): Color {
+fun parseStatToColor(stat: jp.mydns.kokoichi0206.data.data.remote.responses.Stat): Color {
     return when(stat.stat.name.toLowerCase()) {
         "hp" -> HPColor
         "attack" -> AtkColor
@@ -42,7 +40,7 @@ fun parseStatToColor(stat: Stat): Color {
     }
 }
 
-fun parseStatToAbbr(stat: Stat): String {
+fun parseStatToAbbr(stat: jp.mydns.kokoichi0206.data.data.remote.responses.Stat): String {
     return when(stat.stat.name.toLowerCase()) {
         "hp" -> "HP"
         "attack" -> "Atk"

@@ -38,7 +38,7 @@ import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
 import com.example.pokdex.R
-import com.example.pokdex.data.models.PokedexListEntry
+import jp.mydns.kokoichi0206.data.data.models.PokedexListEntry
 import com.example.pokdex.ui.theme.RobotoCondensed
 
 @Composable
@@ -160,7 +160,7 @@ fun PokemonList(
 
 @Composable
 fun PokedexEntry(
-    entry: PokedexListEntry,
+    entry: jp.mydns.kokoichi0206.data.data.models.PokedexListEntry,
     navController: NavController,
     modifier: Modifier = Modifier,
     viewModel: PokemonListViewModel = hiltNavGraphViewModel()
@@ -254,7 +254,7 @@ fun PokedexEntry(
 @Composable
 fun PokedexRow(
     rowIndex: Int,
-    entries: List<PokedexListEntry>,
+    entries: List<jp.mydns.kokoichi0206.data.data.models.PokedexListEntry>,
     navController: NavController
 ) {
     Column {

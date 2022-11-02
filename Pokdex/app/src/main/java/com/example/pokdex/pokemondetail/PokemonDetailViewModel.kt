@@ -1,10 +1,10 @@
 package com.example.pokdex.pokemondetail
 
 import androidx.lifecycle.ViewModel
-import com.example.pokdex.data.remote.responses.Pokemon
-import com.example.pokdex.repository.PokemonRepository
-import com.example.pokdex.util.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import jp.mydns.kokoichi0206.data.data.remote.responses.Pokemon
+import jp.mydns.kokoichi0206.data.repository.PokemonRepository
+import jp.mydns.kokoichi0206.data.util.Resource
 import javax.inject.Inject
 
 @HiltViewModel
