@@ -1,4 +1,4 @@
-package com.example.pokdex.util
+package jp.mydns.kokoichi0206.pokemonlist
 
 object Constants {
 

@@ -1,4 +1,4 @@
-package com.example.pokdex.pokemonlist
+package jp.mydns.kokoichi0206.pokemonlist
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,20 +11,14 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Alignment.Companion.Center
 import androidx.compose.ui.Alignment.Companion.CenterHorizontally
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.focus.FocusState
-import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.input.key.onKeyEvent
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -32,14 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltNavGraphViewModel
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
-import coil.request.ImageRequest
-import com.example.pokdex.R
-import jp.mydns.kokoichi0206.data.data.models.PokedexListEntry
-import com.example.pokdex.ui.theme.RobotoCondensed
 
 @Composable
 fun PokemonListScreen(
@@ -194,55 +182,14 @@ fun PokedexEntry(
             Image(
                 painter = rememberImagePainter(
                     data = entry.imageUrl,
-//                    builder = {
-//                        target(
-//                            onStart = {
-//                                CircularProgressIndicator(
-//                                    color = MaterialTheme.colors.primary,
-//                                    modifier = Modifier.scale(0.5f)
-//                                )
-//                            }
-//                            onSuccess = { result ->
-//                                viewModel.calcDominantColor(result) { color ->
-//                                    dominantColor = color
-//                                }
-//                            }
-//                        )
-//                        target {
-//                            viewModel.calcDominantColor(it) { color ->
-//                                dominantColor = color
-//                            }
-//                        }
-//                    }
                 ),
                 contentDescription = entry.pokemonName,
                 modifier = Modifier
                     .size(120.dp)
                     .align(CenterHorizontally)
             )
-//            Image(
-//                request = ImageRequest.Builder(LocalContext.current)
-//                    .data(entry.imageUrl)
-//                    .target {
-//                        viewModel.calcDominantColor(it) { color ->
-//                            dominantColor = color
-//                        }
-//                    }
-//                    .build(),
-//                contentDescription = entry.pokemonName,
-//                fadeIn = true,
-//                modifier = Modifier
-//                    .size(120.dp)
-//                    .align(CenterHorizontally)
-//            ) {
-//                CircularProgressIndicator(
-//                    color = MaterialTheme.colors.primary,
-//                    modifier = Modifier.scale(0.5f)
-//                )
-//            }
             Text(
                 text = entry.pokemonName,
-                fontFamily = RobotoCondensed,
                 fontSize = 20.sp,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth()

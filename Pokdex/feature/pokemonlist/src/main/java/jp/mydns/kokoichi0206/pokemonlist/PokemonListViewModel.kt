@@ -1,4 +1,4 @@
-package com.example.pokdex.pokemonlist
+package jp.mydns.kokoichi0206.pokemonlist
 
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
@@ -8,10 +8,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.palette.graphics.Palette
-import com.example.pokdex.util.Constants.PAGE_SIZE
 import dagger.hilt.android.lifecycle.HiltViewModel
 import jp.mydns.kokoichi0206.data.repository.PokemonRepository
 import jp.mydns.kokoichi0206.data.util.Resource
+import jp.mydns.kokoichi0206.pokemonlist.Constants.PAGE_SIZE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
