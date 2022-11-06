@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.MaterialTheme
@@ -28,11 +29,24 @@ class MainActivity : ComponentActivity() {
                 // A surface container using the 'background' color from the theme
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
                     Box(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.White),
                         contentAlignment = Alignment.Center,
                     ) {
                         // Kaigi()
-                        ModifierTest()
+//                        ModifierTest()
+
+//                        Messages()
+                        Column {
+                            TopBar()
+                            ExpandingText()
+
+                            SurveyProgress()
+                            NormalSurveyProgress()
+
+                            ImageBorder()
+                        }
                     }
                 }
             }
