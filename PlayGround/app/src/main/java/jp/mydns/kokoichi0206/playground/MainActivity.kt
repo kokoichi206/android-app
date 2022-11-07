@@ -19,6 +19,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import jp.mydns.kokoichi0206.Kaigi
+import jp.mydns.kokoichi0206.playground.blogs.AnimatedIndicator
+import jp.mydns.kokoichi0206.playground.blogs.NormalIndicator
 import jp.mydns.kokoichi0206.playground.ui.theme.PlayGroundTheme
 
 class MainActivity : ComponentActivity() {
@@ -38,14 +40,21 @@ class MainActivity : ComponentActivity() {
 //                        ModifierTest()
 
 //                        Messages()
+
+                        // DevSummit animation
+//                        Column {
+//                            TopBar()
+//                            ExpandingText()
+//
+//                            SurveyProgress()
+//                            NormalSurveyProgress()
+//
+//                            ImageBorder()
+//                        }
+
                         Column {
-                            TopBar()
-                            ExpandingText()
-
-                            SurveyProgress()
-                            NormalSurveyProgress()
-
-                            ImageBorder()
+                            AnimatedIndicator()
+                            NormalIndicator()
                         }
                     }
                 }
