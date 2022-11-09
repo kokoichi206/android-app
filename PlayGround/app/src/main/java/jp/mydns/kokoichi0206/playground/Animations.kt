@@ -21,8 +21,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PaintingStyle.Companion.Stroke
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.painterResource
@@ -254,7 +252,7 @@ fun A(size: IntSize) {
     }
 }
 
-val Int.dp: Int
+val Int.toDp: Int
     get() = (this * Resources.getSystem().displayMetrics.density + 0.5f).toInt()
 
 @Composable
