@@ -53,11 +53,14 @@ class MainActivity : ComponentActivity() {
 //                            NormalIndicator()
 //                        }
 
-                        Column(
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-                            StylingText()
-                        }
+//                        Column(
+//                            modifier = Modifier.padding(16.dp)
+//                        ) {
+//                            StylingText()
+//                        }
+
+//                        MaterialYou()
+                        MaterialYouCollapse()
                     }
                 }
             }
