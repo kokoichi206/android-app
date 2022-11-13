@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import jp.mydns.kokoichi0206.playground.blogs.MaterialYouTest
 import jp.mydns.kokoichi0206.playground.ui.theme.PlayGroundTheme
 
 class MainActivity : ComponentActivity() {
@@ -60,7 +61,9 @@ class MainActivity : ComponentActivity() {
 //                        }
 
 //                        MaterialYou()
-                        MaterialYouCollapse()
+//                        MaterialYouCollapse()
+
+                        MaterialYouTest()
                     }
                 }
             }
