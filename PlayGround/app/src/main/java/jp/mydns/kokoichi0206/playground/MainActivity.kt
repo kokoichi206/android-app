@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        storage(this)
+//        storage(this)
 
         setContent {
             PlayGroundTheme {
@@ -73,7 +73,9 @@ class MainActivity : ComponentActivity() {
 //                        MaterialYou()
 //                        MaterialYouCollapse()
 
-                        MaterialYouTest()
+//                        MaterialYouTest()
+
+                        MyImagePicker()
                     }
                 }
             }
