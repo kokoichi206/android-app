@@ -1,9 +1,16 @@
 package jp.mydns.kokoichi0206.playground
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.os.Bundle
 import android.os.Environment
+import android.os.PersistableBundle
+import android.util.AttributeSet
+import android.util.Log
+import android.view.View
+import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -19,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.os.BuildCompat
 import jp.mydns.kokoichi0206.playground.blogs.MaterialYouTest
 import jp.mydns.kokoichi0206.playground.ui.theme.PlayGroundTheme
 import kotlinx.coroutines.Dispatchers
@@ -28,7 +36,19 @@ import okhttp3.Request
 import java.io.File
 
 class MainActivity : ComponentActivity() {
+    @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        if (BuildCompat.isAtLeastT()) {
+            // Back Gesture を無効になった。
+            onBackInvokedDispatcher.registerOnBackInvokedCallback(
+                OnBackInvokedDispatcher.PRIORITY_DEFAULT
+            ) {
+                // onBackPressed logic
+                Log.d("hoge", "onBackPressed gesture")
+            }
+        }
+
         super.onCreate(savedInstanceState)
 
 //        storage(this)
