@@ -2,6 +2,18 @@
 <resources>
 
     <style name="Theme.PlayGround" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:statusBarColor">@color/purple_700</item>
+        <!-- https://developer.android.com/develop/ui/views/layout/edge-to-edge -->
+        <item name="android:statusBarColor">
+            @android:color/transparent
+        </item>
+        <!-- Optional: set the status bar light and content dark. -->
+        <!-- 時間等が黒色で表示されるようになる -->
+        <item name="android:windowLightStatusBar">
+            true
+        </item>
+
+        <item name="android:navigationBarColor">
+            @android:color/transparent
+        </item>
     </style>
 </resources>

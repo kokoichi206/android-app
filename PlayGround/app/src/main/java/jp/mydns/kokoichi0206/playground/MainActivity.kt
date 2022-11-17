@@ -27,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.os.BuildCompat
+import androidx.core.view.WindowCompat
 import jp.mydns.kokoichi0206.playground.blogs.MaterialYouTest
 import jp.mydns.kokoichi0206.playground.ui.theme.PlayGroundTheme
 import kotlinx.coroutines.Dispatchers
@@ -39,17 +40,18 @@ class MainActivity : ComponentActivity() {
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        if (BuildCompat.isAtLeastT()) {
-            // Back Gesture を無効になった。
-            onBackInvokedDispatcher.registerOnBackInvokedCallback(
-                OnBackInvokedDispatcher.PRIORITY_DEFAULT
-            ) {
-                // onBackPressed logic
-                Log.d("hoge", "onBackPressed gesture")
-            }
-        }
+//        if (BuildCompat.isAtLeastT()) {
+//            // Back Gesture を無効になった。
+//            onBackInvokedDispatcher.registerOnBackInvokedCallback(
+//                OnBackInvokedDispatcher.PRIORITY_DEFAULT
+//            ) {
+//                // onBackPressed logic
+//                Log.d("hoge", "onBackPressed gesture")
+//            }
+//        }
 
         super.onCreate(savedInstanceState)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
 
 //        storage(this)
 
@@ -95,7 +97,7 @@ class MainActivity : ComponentActivity() {
 
 //                        MaterialYouTest()
 
-                        MyImagePicker()
+                        MyImagePickerWithScaffold()
                     }
                 }
             }

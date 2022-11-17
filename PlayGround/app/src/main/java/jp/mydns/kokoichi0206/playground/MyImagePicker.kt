@@ -5,32 +5,71 @@ import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
 import java.io.File
 
 @Composable
-fun MyImagePicker() {
+fun MyImagePickerWithScaffold() {
+    var backPressedCount by remember {
+        mutableStateOf(0)
+    }
+    BackHandler(enabled = true) {
+        backPressedCount++
+        Log.d("hoge", "backPressedCount $backPressedCount")
+    }
+    val dispatcher = LocalOnBackPressedDispatcherOwner.current!!.onBackPressedDispatcher
+
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                modifier = Modifier
+//                    .statusBarsPadding()
+                    .navigationBarsPadding(),
+                onClick = {
+                    // Trigger a call to the currently added callbacks.
+                    dispatcher.onBackPressed()
+                },
+                contentColor = Color.Cyan,
+                shape = RoundedCornerShape(10.dp),
+            ) {
+                Icon(imageVector = Icons.Default.Add, contentDescription = "Floating action button icon")
+            }
+        },
+    ) {
+        MyImagePicker(it)
+    }
+}
+
+@Composable
+fun MyImagePicker(
+    paddingValues: PaddingValues,
+) {
 
     val context = LocalContext.current
     val fileName = "test_file.jpg"
@@ -82,6 +121,14 @@ fun MyImagePicker() {
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
+        Image(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Red),
+            painter = painterResource(id = R.drawable.background),
+            contentDescription = "",
+            contentScale = ContentScale.Crop,
+        )
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -106,6 +153,7 @@ fun MyImagePicker() {
                     .size(300.dp)
                     .clip(CircleShape)
                     .border(2.dp, MaterialTheme.colors.secondary, CircleShape)
+                    .background(Color.White)
                     .clickable {
                         picker.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                     },
