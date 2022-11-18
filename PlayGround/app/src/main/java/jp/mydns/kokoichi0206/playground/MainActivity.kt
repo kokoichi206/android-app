@@ -97,7 +97,9 @@ class MainActivity : ComponentActivity() {
 
 //                        MaterialYouTest()
 
-                        MyImagePickerWithScaffold()
+//                        MyImagePickerWithScaffold()
+
+                        ImageCrop()
                     }
                 }
             }
