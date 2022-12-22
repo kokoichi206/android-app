@@ -99,7 +99,9 @@ class MainActivity : ComponentActivity() {
 
 //                        MyImagePickerWithScaffold()
 
-                        ImageCrop()
+//                        ImageCrop()
+
+                        ScrollDetector()
                     }
                 }
             }
