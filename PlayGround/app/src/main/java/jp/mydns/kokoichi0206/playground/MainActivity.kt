@@ -1,7 +1,10 @@
 package jp.mydns.kokoichi0206.playground
 
 import android.annotation.SuppressLint
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.content.Context
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.PersistableBundle
@@ -12,6 +15,7 @@ import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,6 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.os.BuildCompat
 import androidx.core.view.WindowCompat
 import jp.mydns.kokoichi0206.playground.blogs.MaterialYouTest
@@ -39,6 +45,27 @@ import java.io.File
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        // 通知用のチャネルを作る必要がある
+        val channel = NotificationChannel(
+            "boot_completed",
+            "Boot Completed",
+            NotificationManager.IMPORTANCE_DEFAULT,
+        )
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager.createNotificationChannel(channel)
+
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+        // テスト通知
+        val builder = NotificationCompat.Builder(this, "boot_completed")
+            .setSmallIcon(R.drawable.playground)
+            .setContentTitle("MainActivity onCreate")
+            .setContentText("textContent")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        with(NotificationManagerCompat.from(this)) {
+            // notificationId is a unique int for each notification that you must define
+            notify(2, builder.build())
+        }
 
 //        if (BuildCompat.isAtLeastT()) {
 //            // Back Gesture を無効になった。
