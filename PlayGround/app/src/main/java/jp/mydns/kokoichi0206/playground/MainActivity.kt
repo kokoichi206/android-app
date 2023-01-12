@@ -34,6 +34,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.os.BuildCompat
 import androidx.core.view.WindowCompat
+import jp.mydns.kokoichi0206.playground.alarm.AlarmItem
+import jp.mydns.kokoichi0206.playground.alarm.AndroidAlarmScheduler
 import jp.mydns.kokoichi0206.playground.blogs.MaterialYouTest
 import jp.mydns.kokoichi0206.playground.ui.theme.PlayGroundTheme
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +43,7 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
+import java.time.LocalDateTime
 
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnsafeOptInUsageError")
@@ -81,6 +84,14 @@ class MainActivity : ComponentActivity() {
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
 //        storage(this)
+
+        val scheduler = AndroidAlarmScheduler(this)
+        var alarmItem = AlarmItem(
+            time = LocalDateTime.now()
+                .plusSeconds(10),
+            message = "Message From Alarm",
+        )
+        scheduler.schedule(alarmItem)
 
         setContent {
             PlayGroundTheme {
