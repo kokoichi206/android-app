@@ -47,6 +47,12 @@
         </receiver>
 
         <receiver android:name=".alarm.AlarmReceiver" />
+
+        <receiver android:name=".downloader.DownloadCompletedReceiver" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.actioni.DOWNLOAD_COMPLETE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

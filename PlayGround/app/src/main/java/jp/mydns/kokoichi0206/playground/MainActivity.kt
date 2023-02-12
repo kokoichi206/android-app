@@ -37,6 +37,7 @@ import androidx.core.view.WindowCompat
 import jp.mydns.kokoichi0206.playground.alarm.AlarmItem
 import jp.mydns.kokoichi0206.playground.alarm.AndroidAlarmScheduler
 import jp.mydns.kokoichi0206.playground.blogs.MaterialYouTest
+import jp.mydns.kokoichi0206.playground.downloader.AndroidDownloader
 import jp.mydns.kokoichi0206.playground.ui.theme.PlayGroundTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -48,6 +49,9 @@ import java.time.LocalDateTime
 class MainActivity : ComponentActivity() {
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
+
+        val downloader = AndroidDownloader(this)
+        downloader.downloadFile("https://img.com/test.png")
 
         // 通知用のチャネルを作る必要がある
         val channel = NotificationChannel(
