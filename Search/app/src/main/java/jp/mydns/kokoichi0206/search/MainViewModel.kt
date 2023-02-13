@@ -2,9 +2,12 @@ package jp.mydns.kokoichi0206.search
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 
-class MainViewModel: ViewModel() {
+@OptIn(FlowPreview::class)
+class MainViewModel : ViewModel() {
 
     private val _searchText = MutableStateFlow("")
     val searchText = _searchText.asStateFlow()
@@ -14,16 +17,23 @@ class MainViewModel: ViewModel() {
 
     private val _persons = MutableStateFlow(allPersons)
     val persons = searchText
+        // Delay before other blocks are executed
+        // Like to avoid continuous network communication.
+        .debounce(400L)
+        .onEach { _isSearching.update { true } }
         .combine(_persons) { text, persons ->
             // このブロックは searchText or _persons が変化した時に呼び出される
             if (text.isBlank()) {
                 persons
             } else {
+                // Simulate network call.
+                delay(1000L)
                 persons.filter {
                     it.doesMatchSearchQuery(query = text)
                 }
             }
         }
+        .onEach { _isSearching.update { false } }
         .stateIn(
             viewModelScope,
             SharingStarted.WhileSubscribed(5000),
