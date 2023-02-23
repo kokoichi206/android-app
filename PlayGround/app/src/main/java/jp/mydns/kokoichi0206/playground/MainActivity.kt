@@ -143,7 +143,9 @@ class MainActivity : ComponentActivity() {
 
 //                        ImageCrop()
 
-                        ScrollDetector()
+//                        ScrollDetector()
+
+                        LazyStaggeredGrid()
                     }
                 }
             }
