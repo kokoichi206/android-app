@@ -34,21 +34,56 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.os.BuildCompat
 import androidx.core.view.WindowCompat
+import androidx.lifecycle.lifecycleScope
 import jp.mydns.kokoichi0206.playground.alarm.AlarmItem
 import jp.mydns.kokoichi0206.playground.alarm.AndroidAlarmScheduler
 import jp.mydns.kokoichi0206.playground.blogs.MaterialYouTest
 import jp.mydns.kokoichi0206.playground.downloader.AndroidDownloader
 import jp.mydns.kokoichi0206.playground.ui.theme.PlayGroundTheme
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.logging.HttpLoggingInterceptor
+import retrofit2.Retrofit
+import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.create
 import java.io.File
 import java.time.LocalDateTime
 
 class MainActivity : ComponentActivity() {
+
+    private val api by lazy {
+        Retrofit.Builder()
+            .baseUrl("http://example.kokoichi0206.mydns.jp/")
+            .client(
+                OkHttpClient.Builder()
+                    .addInterceptor(AuthInterceptor())
+                    .addInterceptor(HttpLoggingInterceptor().setLevel(
+                        HttpLoggingInterceptor.Level.BODY
+                    ))
+                    .build()
+            )
+            .addConverterFactory(MoshiConverterFactory.create())
+            .build()
+            .create(AnnotationApi::class.java)
+    }
+
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+//        val user = User(
+//            name = "John Doe",
+//            birthDate = "2004-02-02"
+////                    birthDate = "2004-02-02h    " // Throw exception example
+//        )
+//        lifecycleScope.launch {
+//            api.getPost()
+//            api.getPost()
+//        }
+//        return
 
         val downloader = AndroidDownloader(this)
         downloader.downloadFile("https://img.com/test.png")
@@ -84,7 +119,6 @@ class MainActivity : ComponentActivity() {
 //            }
 //        }
 
-        super.onCreate(savedInstanceState)
         WindowCompat.setDecorFitsSystemWindows(window, false)
 
 //        storage(this)
