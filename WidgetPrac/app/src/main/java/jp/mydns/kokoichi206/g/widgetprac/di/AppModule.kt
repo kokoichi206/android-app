@@ -5,6 +5,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import jp.mydns.kokoichi206.g.widgetprac.BuildConfig
 import jp.mydns.kokoichi206.g.widgetprac.data.ApolloGithubClient
 import jp.mydns.kokoichi206.g.widgetprac.domain.GetUserUsecase
 import jp.mydns.kokoichi206.g.widgetprac.domain.GithubClient
@@ -19,7 +20,7 @@ object AppModule {
     fun provideApolloClient() : ApolloClient {
         return ApolloClient.Builder()
             .serverUrl("https://api.github.com/graphql")
-            .addHttpHeader("Authorization", "bearer XXX")
+            .addHttpHeader("Authorization", "bearer ${BuildConfig.ACCESS_TOKEN}")
             .build()
     }
 

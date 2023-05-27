@@ -1,3 +1,5 @@
+import com.android.build.api.variant.BuildConfigField
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -9,6 +11,18 @@ plugins {
 apollo {
     service("service") {
         packageName.set("jp.mydns.kokoichi206")
+    }
+}
+
+val ACCESS_TOKEN = "your_personal_access_token"
+
+androidComponents {
+    onVariants {
+        it.buildConfigFields.put(
+            "ACCESS_TOKEN", BuildConfigField(
+                "String", "\"$ACCESS_TOKEN\"", "",
+            )
+        )
     }
 }
 
@@ -43,6 +57,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.1"
