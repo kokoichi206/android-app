@@ -179,7 +179,9 @@ class MainActivity : ComponentActivity() {
 
 //                        ScrollDetector()
 
-                        LazyStaggeredGrid()
+//                        LazyStaggeredGrid()
+
+                        MessageText()
                     }
                 }
             }
