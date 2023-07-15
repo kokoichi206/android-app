@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import contacts.domain.Contact
 import contacts.presentation.components.AddContactSheet
+import contacts.presentation.components.ContactDetailSheet
 import contacts.presentation.components.ContactListItem
 import core.presentation.ImagePicker
 
@@ -80,6 +81,12 @@ fun ContactListScreen(
             }
         }
     }
+
+    ContactDetailSheet(
+        isOpen = state.isSelectedContactSheetOpen,
+        selectedContact = state.selectedContact,
+        onEvent = onEvent,
+    )
 
     AddContactSheet(
         state = state,
