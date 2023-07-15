@@ -1,0 +1,2 @@
+- download initial file from [github](https://github.com/JetBrains/compose-multiplatform-ios-android-template/#readme)
+- learned everything from [this youtube](https://www.youtube.com/watch?v=XWSzbMnpAgI&ab_channel=PhilippLackner). thanks
