@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.ui.platform.LocalContext
+import core.presentation.ImagePickerFactory
 import di.AppModule
 
 class MainActivity : AppCompatActivity() {
@@ -17,6 +18,7 @@ class MainActivity : AppCompatActivity() {
                 darkTheme = isSystemInDarkTheme(),
                 dynamicColor = true,
                 appModule = AppModule(LocalContext.current.applicationContext),
+                imagePicker = ImagePickerFactory().create()
             )
         }
     }

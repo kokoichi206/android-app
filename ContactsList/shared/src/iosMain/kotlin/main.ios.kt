@@ -1,4 +1,6 @@
+import androidx.compose.ui.interop.LocalUIViewController
 import androidx.compose.ui.window.ComposeUIViewController
+import core.presentation.ImagePickerFactory
 import di.AppModule
 import platform.UIKit.UIScreen
 import platform.UIKit.UIUserInterfaceStyle
@@ -11,5 +13,6 @@ fun MainViewController() = ComposeUIViewController {
         darkTheme = isDarkTheme,
         dynamicColor = false,
         appModule = AppModule(),
+        imagePicker = ImagePickerFactory(LocalUIViewController.current).create()
     )
 }
