@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import contacts.domain.Contact
+import contacts.presentation.components.AddContactSheet
 import contacts.presentation.components.ContactListItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -47,10 +48,10 @@ fun ContactListScreen(
     ) {
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues( vertical = 16.dp),
+            contentPadding = PaddingValues(vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            item{
+            item {
                 Text(
                     text = "My contacts (${state.contacts.size})",
                     modifier = Modifier
@@ -63,7 +64,7 @@ fun ContactListScreen(
             items(state.contacts) { contact ->
                 ContactListItem(
                     contact = contact,
-                    modifier =Modifier
+                    modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
                             onEvent(ContactListEvent.SelectContact(contact))
@@ -73,4 +74,11 @@ fun ContactListScreen(
             }
         }
     }
+
+    AddContactSheet(
+        state = state,
+        newContact = newContact,
+        isOpen = state.isAddContactSheetOpen,
+        onEvent = onEvent,
+    )
 }
