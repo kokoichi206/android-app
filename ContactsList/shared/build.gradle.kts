@@ -89,6 +89,13 @@ android {
     }
 }
 
+sqldelight {
+    database("ContactDatabase") {
+        packageName = "database"
+        sourceFolders = listOf("sqldelight")
+    }
+}
+
 dependencies {
     implementation("androidx.core:core:1.10.1")
 }
