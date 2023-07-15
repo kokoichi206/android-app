@@ -88,3 +88,7 @@ android {
         jvmToolchain(11)
     }
 }
+
+dependencies {
+    implementation("androidx.core:core:1.10.1")
+}
