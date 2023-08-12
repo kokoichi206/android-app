@@ -137,8 +137,7 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colors.background) {
                     Box(
                         modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.White),
+                            .fillMaxSize(),
                         contentAlignment = Alignment.Center,
                     ) {
                         // Kaigi()
@@ -181,7 +180,9 @@ class MainActivity : ComponentActivity() {
 
 //                        LazyStaggeredGrid()
 
-                        MessageText()
+//                        MessageText()
+
+                        SelectionUI()
                     }
                 }
             }
