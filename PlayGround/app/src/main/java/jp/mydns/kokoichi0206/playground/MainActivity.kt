@@ -60,9 +60,11 @@ class MainActivity : ComponentActivity() {
             .client(
                 OkHttpClient.Builder()
                     .addInterceptor(AuthInterceptor())
-                    .addInterceptor(HttpLoggingInterceptor().setLevel(
-                        HttpLoggingInterceptor.Level.BODY
-                    ))
+                    .addInterceptor(
+                        HttpLoggingInterceptor().setLevel(
+                            HttpLoggingInterceptor.Level.BODY
+                        )
+                    )
                     .build()
             )
             .addConverterFactory(MoshiConverterFactory.create())
@@ -182,7 +184,9 @@ class MainActivity : ComponentActivity() {
 
 //                        MessageText()
 
-                        SelectionUI()
+//                        SelectionUI()
+
+                        Material3()
                     }
                 }
             }
