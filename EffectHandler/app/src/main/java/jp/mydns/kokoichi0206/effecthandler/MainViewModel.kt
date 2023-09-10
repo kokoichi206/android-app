@@ -5,16 +5,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
-@HiltViewModel
-class MainViewModel @Inject constructor(
-    @LightSensorImpl private val lightSensor: MeasurableSensor,
-    @ProximitySensorImpl private val proximitySensor: MeasurableSensor,
-    @StepCounterSensorImpl private val stepCounterSensor: MeasurableSensor,
-) : ViewModel() {
+//@HiltViewModel
+//class MainViewModel @Inject constructor(
+//    @LightSensorImpl private val lightSensor: MeasurableSensor,
+//    @ProximitySensorImpl private val proximitySensor: MeasurableSensor,
+//    @StepCounterSensorImpl private val stepCounterSensor: MeasurableSensor,
+//) : ViewModel() {
 
+class MainViewModel(
+    private val lightSensor: MeasurableSensor,
+     private val proximitySensor: MeasurableSensor,
+     private val stepCounterSensor: MeasurableSensor,
+) : ViewModel() {
     var isDark by mutableStateOf(false)
 
     // 権限が付与されていて、使用できる状態か

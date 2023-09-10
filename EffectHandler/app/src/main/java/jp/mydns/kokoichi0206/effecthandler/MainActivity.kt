@@ -42,7 +42,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.Duration
 
-@AndroidEntryPoint
+//@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -71,6 +71,17 @@ class MainActivity : ComponentActivity() {
             .build()
         val workManager = WorkManager.getInstance(applicationContext)
         setContent {
+            // not using...
+            val viewModel = viewModel<MainViewModel>(
+                factory = viewModelFactory {
+                    MainViewModel(
+                        SensorApp.appModule.lightSensor,
+                        SensorApp.appModule.proximitySensor,
+                        SensorApp.appModule.stepCounterSensor,
+                    )
+                }
+            )
+
             EffectHandlerTheme {
                 val workInfos = workManager
                     .getWorkInfosForUniqueWorkLiveData("download")
