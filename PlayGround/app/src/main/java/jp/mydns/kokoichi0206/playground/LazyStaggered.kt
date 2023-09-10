@@ -34,7 +34,7 @@ fun LazyStaggeredGrid() {
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalItemSpacing = 16.dp,
     ) {
         items(items) { item ->
             RandomColorBox(item = item)
