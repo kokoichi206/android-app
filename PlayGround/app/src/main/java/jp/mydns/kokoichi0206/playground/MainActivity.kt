@@ -87,29 +87,29 @@ class MainActivity : ComponentActivity() {
 //        }
 //        return
 
-        val downloader = AndroidDownloader(this)
-        downloader.downloadFile("https://img.com/test.png")
-
-        // 通知用のチャネルを作る必要がある
-        val channel = NotificationChannel(
-            "boot_completed",
-            "Boot Completed",
-            NotificationManager.IMPORTANCE_DEFAULT,
-        )
-        val notificationManager = getSystemService(NotificationManager::class.java)
-        notificationManager.createNotificationChannel(channel)
-
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
-        // テスト通知
-        val builder = NotificationCompat.Builder(this, "boot_completed")
-            .setSmallIcon(R.drawable.playground)
-            .setContentTitle("MainActivity onCreate")
-            .setContentText("textContent")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        with(NotificationManagerCompat.from(this)) {
-            // notificationId is a unique int for each notification that you must define
-            notify(2, builder.build())
-        }
+//        val downloader = AndroidDownloader(this)
+//        downloader.downloadFile("https://img.com/test.png")
+//
+//        // 通知用のチャネルを作る必要がある
+//        val channel = NotificationChannel(
+//            "boot_completed",
+//            "Boot Completed",
+//            NotificationManager.IMPORTANCE_DEFAULT,
+//        )
+//        val notificationManager = getSystemService(NotificationManager::class.java)
+//        notificationManager.createNotificationChannel(channel)
+//
+//        registerForActivityResult(ActivityResultContracts.RequestPermission()) {}
+//        // テスト通知
+//        val builder = NotificationCompat.Builder(this, "boot_completed")
+//            .setSmallIcon(R.drawable.playground)
+//            .setContentTitle("MainActivity onCreate")
+//            .setContentText("textContent")
+//            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+//        with(NotificationManagerCompat.from(this)) {
+//            // notificationId is a unique int for each notification that you must define
+//            notify(2, builder.build())
+//        }
 
 //        if (BuildCompat.isAtLeastT()) {
 //            // Back Gesture を無効になった。
@@ -186,7 +186,9 @@ class MainActivity : ComponentActivity() {
 
 //                        SelectionUI()
 
-                        Material3()
+//                        Material3()
+
+                        SwipableTabRows()
                     }
                 }
             }

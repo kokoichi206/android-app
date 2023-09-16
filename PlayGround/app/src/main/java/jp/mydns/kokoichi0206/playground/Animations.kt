@@ -213,12 +213,12 @@ fun TopBar() {
             transitionSpec = {
                 slideIntoContainer(
                     animationSpec = tween(300, easing = EaseIn),
-                    towards = AnimatedContentScope.SlideDirection.Up
+                    towards = AnimatedContentTransitionScope.SlideDirection.Up
 //                            towards = AnimatedContentScope.SlideDirection.Up
                 ).with(
                     slideOutOfContainer(
                         animationSpec = tween(300, easing = EaseOut),
-                        towards = AnimatedContentScope.SlideDirection.Down
+                        towards = AnimatedContentTransitionScope.SlideDirection.Down
 //                                towards = AnimatedContentScope.SlideDirection.Down
                     )
                 )
