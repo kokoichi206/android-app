@@ -1,10 +1,15 @@
 package jp.mydns.kokoichi0206.playground
 
+import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
@@ -18,15 +23,18 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun SwipableTabRows() {
     val tabItems = listOf(
@@ -51,6 +59,27 @@ fun SwipableTabRows() {
         mutableIntStateOf(0)
     }
 
+    val pagerState = rememberPagerState {
+        tabItems.size
+    }
+    LaunchedEffect(selectedTabIndex) {
+        Log.d("swipable tab rows", "selectedTabIndex: $selectedTabIndex")
+        pagerState.animateScrollToPage(selectedTabIndex)
+    }
+    LaunchedEffect(pagerState.currentPage, pagerState.isScrollInProgress) {
+        Log.d("swipable tab rows", "pagerState.currentPage: ${pagerState.currentPage}")
+        if (!pagerState.isScrollInProgress) {
+            selectedTabIndex = pagerState.currentPage
+        }
+    }
+    // 2 つ以上離れたタブがクリックされた時に、1つずつ動く挙動をしてしまう。
+    // そのため、1つ動いた時点で selectedTabIndex が変更され、それにより animateScrollToPage がトリガーされて、
+    // 移動が1つで終わってしまう事象が発生する。
+//    LaunchedEffect(pagerState.currentPage) {
+//        Log.d("swipable tab rows", "pagerState.currentPage: ${pagerState.currentPage}")
+//        selectedTabIndex = pagerState.currentPage
+//    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -58,6 +87,7 @@ fun SwipableTabRows() {
     ) {
         Spacer(modifier = Modifier.height(64.dp))
 
+        // ScrollableTabRow is not waht i want...
         TabRow(selectedTabIndex = selectedTabIndex) {
             tabItems.forEachIndexed { index, item ->
                 Tab(
@@ -78,6 +108,20 @@ fun SwipableTabRows() {
                         )
                     }
                 )
+            }
+        }
+
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier
+                .fillMaxSize()
+                .weight(1f)
+        ) { index ->
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(text = tabItems[index].title)
             }
         }
     }
