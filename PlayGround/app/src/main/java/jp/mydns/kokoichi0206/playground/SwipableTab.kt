@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,11 +29,13 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import kotlinx.coroutines.launch
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -70,23 +73,23 @@ fun SwipableTabRowContents() {
         ),
     )
 
-    var selectedTabIndex by remember {
-        mutableIntStateOf(0)
-    }
+//    var selectedTabIndex by remember {
+//        mutableIntStateOf(0)
+//    }
 
     val pagerState = rememberPagerState {
         tabItems.size
     }
-    LaunchedEffect(selectedTabIndex) {
-        Log.d("swipable tab rows", "selectedTabIndex: $selectedTabIndex")
-        pagerState.animateScrollToPage(selectedTabIndex)
-    }
-    LaunchedEffect(pagerState.currentPage, pagerState.isScrollInProgress) {
-        Log.d("swipable tab rows", "pagerState.currentPage: ${pagerState.currentPage}")
-        if (!pagerState.isScrollInProgress) {
-            selectedTabIndex = pagerState.currentPage
-        }
-    }
+//    LaunchedEffect(selectedTabIndex) {
+//        Log.d("swipable tab rows", "selectedTabIndex: $selectedTabIndex")
+//        pagerState.animateScrollToPage(selectedTabIndex)
+//    }
+//    LaunchedEffect(pagerState.currentPage, pagerState.isScrollInProgress) {
+//        Log.d("swipable tab rows", "pagerState.currentPage: ${pagerState.currentPage}")
+//        if (!pagerState.isScrollInProgress) {
+//            selectedTabIndex = pagerState.currentPage
+//        }
+//    }
     // 2 つ以上離れたタブがクリックされた時に、1つずつ動く挙動をしてしまう。
     // そのため、1つ動いた時点で selectedTabIndex が変更され、それにより animateScrollToPage がトリガーされて、
     // 移動が1つで終わってしまう事象が発生する。
@@ -95,25 +98,29 @@ fun SwipableTabRowContents() {
 //        selectedTabIndex = pagerState.currentPage
 //    }
 
+    val animationScope = rememberCoroutineScope()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
         // ScrollableTabRow is not waht i want...
-        TabRow(selectedTabIndex = selectedTabIndex) {
+        TabRow(selectedTabIndex = pagerState.currentPage) {
             tabItems.forEachIndexed { index, item ->
                 Tab(
-                    selected = index == selectedTabIndex,
+                    selected = index == pagerState.currentPage,
                     onClick = {
-                        selectedTabIndex = index
+                        animationScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
                     },
                     text = {
                         Text(text = item.title)
                     },
                     icon = {
                         Icon(
-                            imageVector = if (index == selectedTabIndex) {
+                            imageVector = if (index == pagerState.currentPage) {
                                 item.selectedIcon
                             } else item.unselectedIcon,
                             contentDescription = null,
