@@ -163,6 +163,10 @@ class MainActivity : ComponentActivity() {
 
                     val matrix = Matrix().apply {
                         postRotate(image.imageInfo.rotationDegrees.toFloat())
+
+                        if (controller.cameraSelector == CameraSelector.DEFAULT_FRONT_CAMERA) {
+                            postScale(-1f, 1f)
+                        }
                     }
                     val rotatedBitmap = Bitmap.createBitmap(
                         image.toBitmap(),
