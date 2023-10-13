@@ -8,20 +8,23 @@ import androidx.activity.compose.setContent
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
@@ -70,6 +73,7 @@ class MainActivity : ComponentActivity() {
                 Box(
                     modifier = Modifier
                         .fillMaxSize(),
+                    contentAlignment = Alignment.Center,
                 ) {
                     CameraPreview(
                         controller = controller,
@@ -78,7 +82,7 @@ class MainActivity : ComponentActivity() {
 
                     Column(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .fillMaxSize()
                             .align(Alignment.TopCenter),
                     ) {
                         classifications.forEach {
@@ -94,6 +98,16 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                     }
+
+                    Box(
+                        modifier = Modifier
+                            .size(321.dp)
+                            .border(
+                                width = 4.dp,
+                                color = MaterialTheme.colorScheme.secondary,
+                                shape = RectangleShape,
+                            )
+                    )
                 }
             }
         }
