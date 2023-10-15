@@ -1,3 +1,13 @@
+## pathways
+
+- スマートウォッチの電池を節約する
+  - インタラクティブ
+  - アンビエント
+
+### Links
+
+- [Wear OS モジュールをプロジェクトに追加する](https://developer.android.com/training/wearables/apps/creating?hl=ja#add-wear-os-module)
+
 ## Links
 
 - [pathways](https://developer.android.com/courses/pathways/wear?hl=ja)

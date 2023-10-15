@@ -23,6 +23,24 @@
             android:name="com.google.android.wearable.standalone"
             android:value="true" />
 
+        <service
+            android:name=".service.MyTileService"
+            android:icon="@drawable/hyoujou_shinda_me_man"
+            android:label="@string/hello_world"
+            android:description="@string/hello_world"
+            android:exported="true"
+            android:permission="com.google.android.wearable.permission.BIND_TILE_PROVIDER">
+
+            <intent-filter>
+                <action android:name="androidx.wear.tiles.action.BIND_TILE_PROVIDER" />
+            </intent-filter>
+
+            <!-- The tile preview shown when configuring tiles on your phone -->
+            <meta-data
+                android:name="androidx.wear.tiles.PREVIEW"
+                android:resource="@drawable/hyoujou_shinda_me_man" />
+        </service>
+
         <activity
             android:name=".presentation.MainActivity"
             android:exported="true"
