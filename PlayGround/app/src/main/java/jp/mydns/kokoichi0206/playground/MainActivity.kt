@@ -35,6 +35,8 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.os.BuildCompat
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
+import coil.annotation.ExperimentalCoilApi
+import coil.imageLoader
 import jp.mydns.kokoichi0206.playground.alarm.AlarmItem
 import jp.mydns.kokoichi0206.playground.alarm.AndroidAlarmScheduler
 import jp.mydns.kokoichi0206.playground.blogs.MaterialYouTest
@@ -72,6 +74,7 @@ class MainActivity : ComponentActivity() {
             .create(AnnotationApi::class.java)
     }
 
+    @OptIn(ExperimentalCoilApi::class)
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -188,7 +191,15 @@ class MainActivity : ComponentActivity() {
 
 //                        Material3()
 
-                        SwipableTabRows()
+//                        SwipableTabRows()
+
+                        CoilCacheImage(
+                            clear = {
+                                imageLoader.diskCache?.clear()
+                                imageLoader.memoryCache?.clear()
+//                                imageLoader.diskCache?.remove("key")
+                            },
+                        )
                     }
                 }
             }
