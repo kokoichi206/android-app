@@ -242,7 +242,9 @@ class MainActivity : ComponentActivity() {
 //                            },
 //                        )
 
-                        ModifierText()
+//                        ModifierText()
+
+                        PinchZoomRotateImage()
                     }
                 }
             }
