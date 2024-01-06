@@ -74,8 +74,14 @@ class MainActivity : ComponentActivity() {
                     LifecycleCameraController(applicationContext).apply {
                         setEnabledUseCases(
                             CameraController.IMAGE_CAPTURE or
-                                    CameraController.VIDEO_CAPTURE,
+                                    CameraController.VIDEO_CAPTURE or
+                                    CameraController.IMAGE_ANALYSIS,
                         )
+                        setImageAnalysisAnalyzer(
+                            ContextCompat.getMainExecutor(applicationContext),
+                            FaceAnalyzer { faces ->
+                                Log.d("setImageAnalysisAnalyzer", "detected face count: $faces")
+                            })
                     }
                 }
 
