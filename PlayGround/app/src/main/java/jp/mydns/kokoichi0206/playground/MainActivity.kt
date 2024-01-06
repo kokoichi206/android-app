@@ -193,13 +193,15 @@ class MainActivity : ComponentActivity() {
 
 //                        SwipableTabRows()
 
-                        CoilCacheImage(
-                            clear = {
-                                imageLoader.diskCache?.clear()
-                                imageLoader.memoryCache?.clear()
-//                                imageLoader.diskCache?.remove("key")
-                            },
-                        )
+//                        CoilCacheImage(
+//                            clear = {
+//                                imageLoader.diskCache?.clear()
+//                                imageLoader.memoryCache?.clear()
+////                                imageLoader.diskCache?.remove("key")
+//                            },
+//                        )
+
+                        ModifierText()
                     }
                 }
             }
