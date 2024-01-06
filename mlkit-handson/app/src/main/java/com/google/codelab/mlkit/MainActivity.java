@@ -20,6 +20,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.util.Pair;
@@ -31,8 +32,13 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.face.Face;
 import com.google.mlkit.vision.text.Text;
+import com.google.mlkit.vision.text.TextRecognition;
+import com.google.mlkit.vision.text.TextRecognizer;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -109,12 +115,44 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         dropdown.setOnItemSelectedListener(this);
     }
 
+    // document: https://developers.google.com/ml-kit/vision/text-recognition/v2/android?hl=ja
     private void runTextRecognition() {
-        // Replace with code from the codelab to run text recognition.
+        InputImage image = InputImage.fromBitmap(mSelectedImage, 0);
+        TextRecognizer recognizer = TextRecognition.getClient();
+        mTextButton.setEnabled(false);
+        recognizer.process(image)
+                .addOnSuccessListener(
+                        texts -> {
+                            mTextButton.setEnabled(true);
+                            processTextRecognitionResult(texts);
+                        })
+                .addOnFailureListener(
+                        e -> {
+                            // Task failed with an exception
+                            mTextButton.setEnabled(true);
+                            e.printStackTrace();
+                        });
     }
 
+    // extract text: https://developers.google.com/ml-kit/vision/text-recognition/v2/android?hl=ja#4_extract_text_from_blocks_of_recognized_text
     private void processTextRecognitionResult(Text texts) {
-        // Replace with code from the codelab to process the text recognition result.
+        List<Text.TextBlock> blocks = texts.getTextBlocks();
+        if (blocks.size() == 0) {
+            showToast("No text found");
+            return;
+        }
+        mGraphicOverlay.clear();
+        for (int i = 0; i < blocks.size(); i++) {
+            List<Text.Line> lines = blocks.get(i).getLines();
+            for (int j = 0; j < lines.size(); j++) {
+                List<Text.Element> elements = lines.get(j).getElements();
+                for (int k = 0; k < elements.size(); k++) {
+                    GraphicOverlay.Graphic textGraphic = new TextGraphic(mGraphicOverlay, elements.get(k));
+                    mGraphicOverlay.add(textGraphic);
+
+                }
+            }
+        }
     }
 
     private void runFaceContourDetection() {
