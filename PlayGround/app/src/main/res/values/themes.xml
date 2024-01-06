@@ -16,4 +16,9 @@
             @android:color/transparent
         </item>
     </style>
+
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/black</item>
+        <item name="postSplashScreenTheme">@style/Theme.PlayGround</item>
+    </style>
 </resources>

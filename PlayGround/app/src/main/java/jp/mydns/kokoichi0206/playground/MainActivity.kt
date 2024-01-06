@@ -1,5 +1,6 @@
 package jp.mydns.kokoichi0206.playground
 
+import android.animation.ObjectAnimator
 import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -11,11 +12,13 @@ import android.os.PersistableBundle
 import android.util.AttributeSet
 import android.util.Log
 import android.view.View
+import android.view.animation.OvershootInterpolator
 import android.window.OnBackInvokedDispatcher
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedDispatcher
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,9 +33,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.core.animation.doOnEnd
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.os.BuildCompat
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.WindowCompat
 import androidx.lifecycle.lifecycleScope
 import coil.annotation.ExperimentalCoilApi
@@ -74,10 +79,46 @@ class MainActivity : ComponentActivity() {
             .create(AnnotationApi::class.java)
     }
 
+    private val viewModel by viewModels<MainViewModel>()
+
     @OptIn(ExperimentalCoilApi::class)
     @SuppressLint("UnsafeOptInUsageError")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
+        installSplashScreen().apply {
+            // ログインしてるかの確認など。
+            setKeepOnScreenCondition {
+                !viewModel.isReady.value
+            }
+            setOnExitAnimationListener { screen ->
+                val zoomX = ObjectAnimator.ofFloat(
+                    screen.iconView,
+                    View.SCALE_X,
+                    // From @res/animator/logo_animator.xml
+                    1.0f,
+                    0.0f,
+                )
+                zoomX.interpolator = OvershootInterpolator()
+                zoomX.duration = 500L
+                zoomX.doOnEnd { screen.remove() }
+
+                val zoomY = ObjectAnimator.ofFloat(
+                    screen.iconView,
+                    View.SCALE_Y,
+                    // From @res/animator/logo_animator.xml
+                    1.0f,
+                    0.0f,
+                )
+                zoomY.interpolator = OvershootInterpolator()
+                zoomY.duration = 500L
+                zoomY.doOnEnd { screen.remove() }
+
+                zoomX.start()
+                zoomY.start()
+            }
+        }
 
 //        val user = User(
 //            name = "John Doe",
