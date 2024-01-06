@@ -97,7 +97,7 @@ class MainActivity : ComponentActivity() {
                     screen.iconView,
                     View.SCALE_X,
                     // From @res/animator/logo_animator.xml
-                    1.0f,
+                    0.6f,
                     0.0f,
                 )
                 zoomX.interpolator = OvershootInterpolator()
@@ -108,7 +108,7 @@ class MainActivity : ComponentActivity() {
                     screen.iconView,
                     View.SCALE_Y,
                     // From @res/animator/logo_animator.xml
-                    1.0f,
+                    0.6f,
                     0.0f,
                 )
                 zoomY.interpolator = OvershootInterpolator()
