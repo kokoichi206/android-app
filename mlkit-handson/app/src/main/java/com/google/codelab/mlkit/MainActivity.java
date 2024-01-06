@@ -36,6 +36,9 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.mlkit.vision.common.InputImage;
 import com.google.mlkit.vision.face.Face;
+import com.google.mlkit.vision.face.FaceDetection;
+import com.google.mlkit.vision.face.FaceDetector;
+import com.google.mlkit.vision.face.FaceDetectorOptions;
 import com.google.mlkit.vision.text.Text;
 import com.google.mlkit.vision.text.TextRecognition;
 import com.google.mlkit.vision.text.TextRecognizer;
@@ -155,12 +158,44 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     }
 
+    // document: https://developers.google.com/ml-kit/vision/face-detection/android?hl=ja#java
     private void runFaceContourDetection() {
-        // Replace with code from the codelab to run face contour detection.
+        InputImage image = InputImage.fromBitmap(mSelectedImage, 0);
+        FaceDetectorOptions options =
+                new FaceDetectorOptions.Builder()
+                        .setPerformanceMode(FaceDetectorOptions.PERFORMANCE_MODE_FAST)
+                        .setContourMode(FaceDetectorOptions.CONTOUR_MODE_ALL)
+                        .build();
+
+        mFaceButton.setEnabled(false);
+        FaceDetector detector = FaceDetection.getClient(options);
+        detector.process(image)
+                .addOnSuccessListener(
+                        faces -> {
+                            mFaceButton.setEnabled(true);
+                            processFaceContourDetectionResult(faces);
+                        })
+                .addOnFailureListener(
+                        e -> {
+                            // Task failed with an exception
+                            mFaceButton.setEnabled(true);
+                            e.printStackTrace();
+                        });
     }
 
     private void processFaceContourDetectionResult(List<Face> faces) {
-        // Replace with code from the codelab to process the face contour detection result.
+        // Task completed successfully
+        if (faces.size() == 0) {
+            showToast("No face found");
+            return;
+        }
+        mGraphicOverlay.clear();
+        for (int i = 0; i < faces.size(); ++i) {
+            Face face = faces.get(i);
+            FaceContourGraphic faceGraphic = new FaceContourGraphic(mGraphicOverlay);
+            mGraphicOverlay.add(faceGraphic);
+            faceGraphic.updateFace(face);
+        }
     }
 
     private void showToast(String message) {
