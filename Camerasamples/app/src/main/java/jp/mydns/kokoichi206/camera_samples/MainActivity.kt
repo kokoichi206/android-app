@@ -2,6 +2,11 @@ package jp.mydns.kokoichi206.camera_samples
 
 import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.Matrix
@@ -10,6 +15,8 @@ import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageCapture.OnImageCapturedCallback
 import androidx.camera.core.ImageCaptureException
@@ -54,6 +61,11 @@ import java.io.File
 class MainActivity : ComponentActivity() {
 
     private var recording: Recording? = null
+    private var devicePolicyManager: DevicePolicyManager? = null
+    private var componentName: ComponentName? = null
+
+    // 初回は現在時刻を入れておく。
+    private var lastFaceDetectedTimeMilli = System.currentTimeMillis()
 
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -66,6 +78,26 @@ class MainActivity : ComponentActivity() {
             )
         }
 
+        devicePolicyManager = getSystemService(Context.DEVICE_POLICY_SERVICE) as DevicePolicyManager?
+        componentName = ComponentName(this, Admin::class.java)
+
+        // Admin 権限が付与されてない場合。
+        if (devicePolicyManager != null && !devicePolicyManager!!.isAdminActive(componentName!!)) {
+            Log.d("LockScreen", "admin is not active")
+            val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+            intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
+            intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Administrator description")
+            val startForResult =
+                registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result: ActivityResult? ->
+                    if (result?.resultCode == Activity.RESULT_OK) {
+                        // TODO: 許可した後の遷移がない。現状では再度立ち上げ直す必要がある。
+                    }
+                }
+            startForResult.launch(intent)
+        }
+
+        val milliSecUntilLock = 5_000
+
         setContent {
             CamerasamplesTheme {
                 val scope = rememberCoroutineScope()
@@ -74,8 +106,28 @@ class MainActivity : ComponentActivity() {
                     LifecycleCameraController(applicationContext).apply {
                         setEnabledUseCases(
                             CameraController.IMAGE_CAPTURE or
-                                    CameraController.VIDEO_CAPTURE,
+                                    CameraController.VIDEO_CAPTURE or
+                                    CameraController.IMAGE_ANALYSIS,
                         )
+                        setImageAnalysisAnalyzer(
+                            ContextCompat.getMainExecutor(applicationContext),
+                            FaceAnalyzer { faces ->
+                                Log.d("setImageAnalysisAnalyzer", "detected face count: $faces")
+                                val currentTimeMillis = System.currentTimeMillis()
+                                // 顔が１つ以上検知できた場合。
+                                if (faces > 0) {
+                                    lastFaceDetectedTimeMilli = currentTimeMillis
+                                }
+                                // しばらく顔がカメラの中に現れてない。
+                                if (currentTimeMillis - lastFaceDetectedTimeMilli > milliSecUntilLock) {
+                                    devicePolicyManager?.lockNow()
+                                    Log.d("setImageAnalysisAnalyzer", "currentTimeMillis: $currentTimeMillis")
+                                    Log.d(
+                                        "setImageAnalysisAnalyzer",
+                                        "devicePolicyManager locked screen (lastFaceDetectedTimeMilli: $lastFaceDetectedTimeMilli)"
+                                    )
+                                }
+                            })
                     }
                 }
 
@@ -267,6 +319,13 @@ class MainActivity : ComponentActivity() {
                 it,
             ) == PackageManager.PERMISSION_GRANTED
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        // ロック解除後の変数初期化がないと、無限にロックされてしまう。
+        lastFaceDetectedTimeMilli = System.currentTimeMillis()
     }
 
     companion object {
