@@ -244,7 +244,9 @@ class MainActivity : ComponentActivity() {
 
 //                        ModifierText()
 
-                        PinchZoomRotateImage()
+//                        PinchZoomRotateImage()
+
+                        DeletableContent()
                     }
                 }
             }
