@@ -246,7 +246,9 @@ class MainActivity : ComponentActivity() {
 
 //                        PinchZoomRotateImage()
 
-                        DeletableContent()
+//                        DeletableContent()
+
+                        DocumentScanner(activity = this@MainActivity, filesDir = filesDir, contentResolver = contentResolver)
                     }
                 }
             }
