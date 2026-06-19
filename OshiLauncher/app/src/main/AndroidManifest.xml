@@ -13,6 +13,13 @@
         android:name="android.software.live_wallpaper"
         android:required="false" />
 
+    <!-- 既定ホーム時に付与される権限。未宣言だと「デフォルトのホームアプリ」ダイアログで
+         「必要な権限がありません」と注記される（Launcher3 も宣言している）。
+         API 35+ では RECEIVE_SENSITIVE_NOTIFICATIONS も HOME ロールの付与対象
+         （prot=...|role なので役割保持者には付与可能）。両方宣言して注記を解消する。 -->
+    <uses-permission android:name="android.permission.READ_HOME_APP_SEARCH_DATA" />
+    <uses-permission android:name="android.permission.RECEIVE_SENSITIVE_NOTIFICATIONS" />
+
     <application
         android:label="@string/app_name"
         android:theme="@style/Theme.Oshi">

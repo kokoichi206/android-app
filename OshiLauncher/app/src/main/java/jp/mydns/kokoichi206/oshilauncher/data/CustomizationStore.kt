@@ -27,6 +27,10 @@ class CustomizationStore(private val context: Context) {
         private const val KEY_ICONS = "icons"
         private const val KEY_TRANSITION = "transition_style"
         private const val KEY_OSHI_MODE = "oshi_mode"
+        private const val KEY_SHARED_LAYOUT = "shared_layout"
+        private const val KEY_LAYOUT_SHARED = "layout_shared"
+        private const val KEY_LAYOUT_NORMAL = "layout_normal"
+        private const val KEY_LAYOUT_OSHI = "layout_oshi"
         const val DEFAULT_INTERVAL_SECONDS = 3
         const val MIN_INTERVAL_SECONDS = 1
         const val MAX_INTERVAL_SECONDS = 60
@@ -63,6 +67,34 @@ class CustomizationStore(private val context: Context) {
     fun setOshiMode(on: Boolean) {
         prefs.edit().putBoolean(KEY_OSHI_MODE, on).apply()
     }
+
+    // --- ホーム配置（モード別レイアウト / 共有） ---
+
+    /** true なら両モードで同じ配置を共有、false（既定）ならモードごとに別配置。 */
+    fun isSharedLayout(): Boolean = prefs.getBoolean(KEY_SHARED_LAYOUT, false)
+
+    fun setSharedLayout(shared: Boolean, currentOshi: Boolean) {
+        if (shared && prefs.getString(KEY_LAYOUT_SHARED, null).isNullOrEmpty()) {
+            // 共有に切り替える瞬間、現在モードの配置を共有レイアウトの初期値にする。
+            prefs.edit().putString(KEY_LAYOUT_SHARED, rawLayout(layoutKey(false, currentOshi))).apply()
+        }
+        prefs.edit().putBoolean(KEY_SHARED_LAYOUT, shared).apply()
+    }
+
+    fun homeLayout(oshi: Boolean): HomeLayout =
+        HomeLayout.fromJsonString(rawLayout(layoutKey(isSharedLayout(), oshi)))
+
+    fun setHomeLayout(oshi: Boolean, layout: HomeLayout) {
+        prefs.edit().putString(layoutKey(isSharedLayout(), oshi), layout.toJsonString()).apply()
+    }
+
+    private fun layoutKey(shared: Boolean, oshi: Boolean): String = when {
+        shared -> KEY_LAYOUT_SHARED
+        oshi -> KEY_LAYOUT_OSHI
+        else -> KEY_LAYOUT_NORMAL
+    }
+
+    private fun rawLayout(key: String): String = prefs.getString(key, "") ?: ""
 
     fun addWallpaper(uri: Uri): String {
         val name = copyToDir(uri, wallpaperDir)

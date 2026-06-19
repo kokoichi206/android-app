@@ -154,6 +154,19 @@ fun CustomizeScreen(
                     }
                     Text("※ ホームを2本指でタップしても切り替わります。", fontSize = 11.sp, color = ColorDim,
                         modifier = Modifier.padding(top = 8.dp))
+
+                    Spacer(Modifier.height(14.dp))
+                    val shared = remember(localRevision) { store.isSharedLayout() }
+                    Text("配置（アイコン/ウィジェット）", fontSize = 12.sp, color = ColorDim,
+                        modifier = Modifier.padding(bottom = 8.dp))
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TransitionChip("モードごとに分ける", "通常/推しで別配置", selected = !shared) {
+                            store.setSharedLayout(false, store.isOshiMode()); bumpLocal()
+                        }
+                        TransitionChip("両モード共通", "配置は1つ", selected = shared) {
+                            store.setSharedLayout(true, store.isOshiMode()); bumpLocal()
+                        }
+                    }
                     Spacer(Modifier.height(26.dp))
                 }
                 item {
