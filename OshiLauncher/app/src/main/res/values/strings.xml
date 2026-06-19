@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Oshi Launcher</string>
+    <string name="wallpaper_title">Oshi Slideshow</string>
+    <string name="wallpaper_desc">推し画像をスライドインで切り替えるライブ壁紙</string>
+</resources>
