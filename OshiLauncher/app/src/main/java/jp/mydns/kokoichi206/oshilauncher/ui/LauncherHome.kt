@@ -1,26 +1,20 @@
 package jp.mydns.kokoichi206.oshilauncher.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -31,8 +25,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import jp.mydns.kokoichi206.oshilauncher.data.AppEntry
@@ -45,11 +46,12 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+// 任意の壁紙の上でも読めるよう、白文字＋影で描く（全面スクリムで壁紙を暗くしない）。
+private val onWallpaperShadow = Shadow(Color.Black.copy(alpha = 0.65f), Offset(0f, 1.5f), 4f)
+
 @Composable
 fun OshiLauncherApp(repo: AppRepository, store: CustomizationStore) {
     var apps by remember { mutableStateOf(emptyList<AppEntry>()) }
-    var showDrawer by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
     var revision by remember { mutableIntStateOf(0) }
 
@@ -66,30 +68,41 @@ fun OshiLauncherApp(repo: AppRepository, store: CustomizationStore) {
         LocalCustomizationStore provides store,
         LocalCustomizeRevision provides revision,
     ) {
-        BackHandler(enabled = true) {
-            showDrawer = false
-            if (showSettings) closeSettings()
-        }
+        // ランチャーなので戻るはホームでは無反応、設定が開いていれば閉じるだけ。
+        BackHandler(enabled = showSettings) { closeSettings() }
 
-        Box(Modifier.fillMaxSize().background(ColorBg)) {
-            WallpaperLayer(store, revision, Modifier.fillMaxSize())
-            Box(
-                Modifier
-                    .fillMaxSize()
-                    .pointerInput(Unit) {
-                        detectVerticalDragGestures { _, dragAmount ->
-                            if (dragAmount < -14f) showDrawer = true
+        val oshiMode = remember(revision) { store.isOshiMode() }
+
+        Box(
+            Modifier
+                .fillMaxSize()
+                // 2本指タップで 推し/通常 を切替。Initial パスで監視し consume しないので
+                // 単指タップ・スクロール・上スワイプとは衝突しない。
+                .pointerInput(revision) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            val ev = awaitPointerEvent(PointerEventPass.Initial)
+                            if (ev.changes.count { it.pressed } >= 2) {
+                                store.setOshiMode(!store.isOshiMode())
+                                revision++
+                                do {
+                                    val e2 = awaitPointerEvent(PointerEventPass.Initial)
+                                } while (e2.changes.any { it.pressed })
+                            }
                         }
-                    },
-            ) {
-                HomeContent(
-                    apps = apps,
-                    repo = repo,
-                    onLaunch = { repo.launch(it.packageName) },
-                    onOpenDrawer = { showDrawer = true },
-                    onOpenSettings = { showSettings = true },
-                )
+                    }
+                },
+        ) {
+            // 推しモードのみ背景スライドショーを重ねる。通常モードは透過のままシステム壁紙を見せる。
+            if (oshiMode) {
+                WallpaperLayer(store, revision, Modifier.fillMaxSize())
             }
+            HomeContent(
+                apps = apps,
+                repo = repo,
+                onLaunch = { repo.launch(it.packageName) },
+                onOpenSettings = { showSettings = true },
+            )
         }
 
         if (showSettings) {
@@ -100,20 +113,6 @@ fun OshiLauncherApp(repo: AppRepository, store: CustomizationStore) {
                 onClose = { closeSettings() },
             )
         }
-
-        if (showDrawer) {
-            val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-            ModalBottomSheet(
-                onDismissRequest = { showDrawer = false },
-                sheetState = sheetState,
-                containerColor = ColorSheet,
-            ) {
-                AppDrawer(apps, repo) { app ->
-                    repo.launch(app.packageName)
-                    showDrawer = false
-                }
-            }
-        }
     }
 }
 
@@ -122,7 +121,6 @@ private fun HomeContent(
     apps: List<AppEntry>,
     repo: AppRepository,
     onLaunch: (AppEntry) -> Unit,
-    onOpenDrawer: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     val timeFormat = remember { SimpleDateFormat("H:mm", Locale.JAPAN) }
@@ -135,79 +133,63 @@ private fun HomeContent(
         }
     }
 
-    Column(Modifier.fillMaxSize().padding(horizontal = 26.dp)) {
-        Row(Modifier.fillMaxWidth().padding(top = 36.dp), horizontalArrangement = Arrangement.End) {
+    Column(Modifier.fillMaxSize().padding(horizontal = 14.dp)) {
+        Row(Modifier.fillMaxWidth().padding(top = 36.dp, end = 8.dp), horizontalArrangement = Arrangement.End) {
             Text(
                 "⚙",
                 fontSize = 18.sp,
-                color = ColorText,
+                color = Color.White,
+                style = TextStyle(shadow = onWallpaperShadow),
                 modifier = Modifier.clickable(onClick = onOpenSettings).padding(8.dp),
             )
         }
-
-        Spacer(Modifier.height(40.dp))
         Text(
             timeFormat.format(now),
-            fontSize = 64.sp,
+            fontSize = 60.sp,
             fontWeight = FontWeight.Light,
-            color = ColorText,
+            color = Color.White,
+            style = TextStyle(shadow = onWallpaperShadow),
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
         Text(
             dateFormat.format(now),
             fontSize = 14.sp,
-            color = ColorSub,
+            color = Color.White.copy(alpha = 0.9f),
+            style = TextStyle(shadow = onWallpaperShadow),
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
 
-        Spacer(Modifier.weight(1f))
+        Spacer(Modifier.height(22.dp))
 
-        // 推し背景を隠しすぎないよう、ホームにはお気に入り数件だけ置く。
-        apps.take(4).forEach { app ->
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clickable { onLaunch(app) }
-                    .padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                AppIconImage(app.packageName, repo, 40.dp)
-                Spacer(Modifier.width(16.dp))
-                Text(app.label, fontSize = 16.sp, color = ColorText)
+        LazyVerticalGrid(
+            columns = GridCells.Fixed(4),
+            modifier = Modifier.fillMaxSize(),
+        ) {
+            items(apps, key = { it.packageName }) { app ->
+                AppCell(app, repo) { onLaunch(app) }
             }
         }
-
-        Text(
-            "︿ アプリ一覧",
-            fontSize = 12.sp,
-            color = ColorSub,
-            modifier = Modifier
-                .align(Alignment.CenterHorizontally)
-                .clickable(onClick = onOpenDrawer)
-                .padding(vertical = 16.dp),
-        )
     }
 }
 
 @Composable
-private fun AppDrawer(apps: List<AppEntry>, repo: AppRepository, onClick: (AppEntry) -> Unit) {
-    LazyColumn(
+private fun AppCell(app: AppEntry, repo: AppRepository, onClick: () -> Unit) {
+    Column(
         Modifier
-            .fillMaxHeight(0.88f)
-            .padding(horizontal = 20.dp),
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp, horizontal = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        items(apps, key = { it.packageName }) { app ->
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .clickable { onClick(app) }
-                    .padding(vertical = 9.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                AppIconImage(app.packageName, repo, 38.dp)
-                Spacer(Modifier.width(14.dp))
-                Text(app.label, fontSize = 15.sp, color = ColorText)
-            }
-        }
+        AppIconImage(app.packageName, repo, 52.dp)
+        Spacer(Modifier.height(6.dp))
+        Text(
+            app.label,
+            fontSize = 11.sp,
+            color = Color.White,
+            style = TextStyle(shadow = onWallpaperShadow),
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            textAlign = TextAlign.Center,
+        )
     }
 }

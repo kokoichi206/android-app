@@ -40,7 +40,10 @@ val LocalCustomizeRevision = compositionLocalOf { 0 }
 fun AppIconImage(packageName: String, repo: AppRepository, size: Dp) {
     val store = LocalCustomizationStore.current
     val revision = LocalCustomizeRevision.current
-    val customFile = remember(packageName, revision) { store?.iconFile(packageName) }
+    // 通常モードではアイコン上書きを無視し、デフォルトのシステムアイコンを使う。
+    val customFile = remember(packageName, revision) {
+        if (store?.isOshiMode() == true) store.iconFile(packageName) else null
+    }
 
     var bitmap by remember(packageName, revision) {
         mutableStateOf(if (customFile == null) IconCache.peek(packageName) else null)

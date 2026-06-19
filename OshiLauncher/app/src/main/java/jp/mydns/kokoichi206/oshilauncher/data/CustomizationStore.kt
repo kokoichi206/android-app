@@ -25,6 +25,8 @@ class CustomizationStore(private val context: Context) {
         private const val KEY_WALLPAPERS = "wallpapers"
         private const val KEY_INTERVAL = "interval_seconds"
         private const val KEY_ICONS = "icons"
+        private const val KEY_TRANSITION = "transition_style"
+        private const val KEY_OSHI_MODE = "oshi_mode"
         const val DEFAULT_INTERVAL_SECONDS = 3
         const val MIN_INTERVAL_SECONDS = 1
         const val MAX_INTERVAL_SECONDS = 60
@@ -43,6 +45,23 @@ class CustomizationStore(private val context: Context) {
         prefs.edit()
             .putInt(KEY_INTERVAL, seconds.coerceIn(MIN_INTERVAL_SECONDS, MAX_INTERVAL_SECONDS))
             .apply()
+    }
+
+    fun transition(): WallpaperTransition =
+        WallpaperTransition.fromId(prefs.getString(KEY_TRANSITION, null))
+
+    fun setTransition(t: WallpaperTransition) {
+        prefs.edit().putString(KEY_TRANSITION, t.id).apply()
+    }
+
+    /**
+     * 推しモード（true）= 背景スライドショー＋カスタムアイコンを有効化。
+     * 通常モード（false, 既定）= システム壁紙＋デフォルトアイコンの普通のホーム。
+     */
+    fun isOshiMode(): Boolean = prefs.getBoolean(KEY_OSHI_MODE, false)
+
+    fun setOshiMode(on: Boolean) {
+        prefs.edit().putBoolean(KEY_OSHI_MODE, on).apply()
     }
 
     fun addWallpaper(uri: Uri): String {

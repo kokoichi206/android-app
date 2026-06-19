@@ -15,6 +15,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -47,6 +49,7 @@ import androidx.compose.ui.unit.sp
 import jp.mydns.kokoichi206.oshilauncher.data.AppEntry
 import jp.mydns.kokoichi206.oshilauncher.data.AppRepository
 import jp.mydns.kokoichi206.oshilauncher.data.CustomizationStore
+import jp.mydns.kokoichi206.oshilauncher.data.WallpaperTransition
 import jp.mydns.kokoichi206.oshilauncher.wallpaper.SlideshowWallpaperService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -57,6 +60,7 @@ import java.io.File
  * 推しランチャーの設定（壁紙スライドショー / アイコン差し替え / ライブ壁紙に設定）。
  * 画面内の変更は localRevision で即時反映し、onClose 側で全体 revision を進めてホームへ伝える。
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CustomizeScreen(
     apps: List<AppEntry>,
@@ -100,6 +104,10 @@ fun CustomizeScreen(
         }
     }
 
+    val setHome = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) { bumpLocal() }
+
     fun openLiveWallpaperPicker() {
         val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER).apply {
             putExtra(
@@ -134,9 +142,40 @@ fun CustomizeScreen(
 
             LazyColumn(Modifier.weight(1f)) {
                 item {
+                    val oshiMode = remember(localRevision) { store.isOshiMode() }
+                    SectionTitle("表示モード")
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        TransitionChip("推しモード", "背景・アイコン", selected = oshiMode) {
+                            store.setOshiMode(true); bumpLocal()
+                        }
+                        TransitionChip("通常モード", "標準の見た目", selected = !oshiMode) {
+                            store.setOshiMode(false); bumpLocal()
+                        }
+                    }
+                    Text("※ ホームを2本指でタップしても切り替わります。", fontSize = 11.sp, color = ColorDim,
+                        modifier = Modifier.padding(top = 8.dp))
+                    Spacer(Modifier.height(26.dp))
+                }
+                item {
+                    val isHome = remember(localRevision) { DefaultLauncher.isDefault(context) }
+                    SectionTitle("ホームアプリ")
+                    if (isHome) {
+                        Text("✓ このアプリがホームに設定されています", fontSize = 12.sp, color = ColorSub,
+                            modifier = Modifier.padding(bottom = 6.dp))
+                    } else {
+                        Text("ホームボタンで OshiLauncher が開くようにします。", fontSize = 11.sp, color = ColorDim,
+                            modifier = Modifier.padding(bottom = 8.dp))
+                        Chip("このアプリをホームに設定") { setHome.launch(DefaultLauncher.requestIntent(context)) }
+                    }
+                    Spacer(Modifier.height(26.dp))
+                }
+                item {
                     SectionTitle("推し背景スライドショー")
                     IntervalRow(store)
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.height(14.dp))
+                    Text("切替アニメ", fontSize = 12.sp, color = ColorDim, modifier = Modifier.padding(bottom = 8.dp))
+                    TransitionRow(store, localRevision) { bumpLocal() }
+                    Spacer(Modifier.height(14.dp))
                     WallpaperSection(
                         wallpapers = wallpapers,
                         onAdd = {
@@ -300,6 +339,38 @@ private fun IconRow(
             Spacer(Modifier.width(8.dp))
         }
         Chip("変更", onClick = onChange)
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TransitionRow(store: CustomizationStore, revision: Int, onPick: () -> Unit) {
+    val current = remember(revision) { store.transition() }
+    FlowRow(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        WallpaperTransition.entries.forEach { t ->
+            TransitionChip(t.label, t.sub, selected = t == current) {
+                store.setTransition(t)
+                onPick()
+            }
+        }
+    }
+}
+
+@Composable
+private fun TransitionChip(label: String, sub: String, selected: Boolean, onClick: () -> Unit) {
+    Column(
+        Modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (selected) ColorAccent.copy(alpha = 0.22f) else ColorTile)
+            .border(1.dp, if (selected) ColorAccent else Color.Transparent, RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 14.dp, vertical = 9.dp),
+    ) {
+        Text(label, fontSize = 13.sp, color = ColorText)
+        Text(sub, fontSize = 10.sp, color = if (selected) ColorAccent else ColorDim)
     }
 }
 
