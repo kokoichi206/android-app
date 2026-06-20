@@ -31,6 +31,7 @@ class CustomizationStore(private val context: Context) {
         private const val KEY_LAYOUT_SHARED = "layout_shared"
         private const val KEY_LAYOUT_NORMAL = "layout_normal"
         private const val KEY_LAYOUT_OSHI = "layout_oshi"
+        private const val KEY_LAUNCH_TIMES = "launch_times"
         const val DEFAULT_INTERVAL_SECONDS = 3
         const val MIN_INTERVAL_SECONDS = 1
         const val MAX_INTERVAL_SECONDS = 60
@@ -95,6 +96,19 @@ class CustomizationStore(private val context: Context) {
     }
 
     private fun rawLayout(key: String): String = prefs.getString(key, "") ?: ""
+
+    // --- アプリ起動履歴（ドロワーの最近起動順ソート用） ---
+
+    fun recordLaunch(packageName: String) {
+        val json = JSONObject(prefs.getString(KEY_LAUNCH_TIMES, null) ?: "{}")
+        json.put(packageName, System.currentTimeMillis())
+        prefs.edit().putString(KEY_LAUNCH_TIMES, json.toString()).apply()
+    }
+
+    fun launchTimes(): Map<String, Long> {
+        val json = JSONObject(prefs.getString(KEY_LAUNCH_TIMES, null) ?: "{}")
+        return json.keys().asSequence().associateWith { json.getLong(it) }
+    }
 
     fun addWallpaper(uri: Uri): String {
         val name = copyToDir(uri, wallpaperDir)

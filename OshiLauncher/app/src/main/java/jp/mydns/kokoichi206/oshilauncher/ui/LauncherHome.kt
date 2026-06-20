@@ -8,9 +8,14 @@ import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -24,15 +29,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -42,13 +51,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -62,6 +76,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.zIndex
+import androidx.core.graphics.drawable.toBitmap
 import jp.mydns.kokoichi206.oshilauncher.data.AppEntry
 import jp.mydns.kokoichi206.oshilauncher.data.AppRepository
 import jp.mydns.kokoichi206.oshilauncher.data.CustomizationStore
@@ -71,6 +86,7 @@ import jp.mydns.kokoichi206.oshilauncher.data.ItemType
 import jp.mydns.kokoichi206.oshilauncher.data.LayoutItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -86,6 +102,7 @@ private val labelStyle = TextStyle(shadow = onWallpaperShadow)
 fun OshiLauncherApp(repo: AppRepository, store: CustomizationStore, widgetHost: AppWidgetHost) {
     val context = LocalContext.current
     val awm = remember { AppWidgetManager.getInstance(context) }
+    val scope = rememberCoroutineScope()
 
     var apps by remember { mutableStateOf(emptyList<AppEntry>()) }
     var showSettings by remember { mutableStateOf(false) }
@@ -97,6 +114,7 @@ fun OshiLauncherApp(repo: AppRepository, store: CustomizationStore, widgetHost: 
 
     val oshiMode = remember(revision) { store.isOshiMode() }
     var layout by remember(revision) { mutableStateOf(store.homeLayout(oshiMode)) }
+    val pagerState = rememberPagerState { maxOf(1, layout.pageCount()) }
 
     fun updateLayout(next: HomeLayout) {
         layout = next
@@ -115,21 +133,50 @@ fun OshiLauncherApp(repo: AppRepository, store: CustomizationStore, widgetHost: 
         }
     }
 
-    // --- ウィジェット追加フロー（割り当て→バインド→設定→配置） ---
-    // 外部 Activity（バインド確認・configure）往復で Activity が再生成されても失わないよう、
-    // 保留 ID は rememberSaveable に置き、結果 Intent の EXTRA_APPWIDGET_ID から復元する。
-    // provider は id から awm.getAppWidgetInfo(id) で再取得（state に持たない）。
+    fun launch(pkg: String) {
+        store.recordLaunch(pkg)
+        repo.launch(pkg)
+    }
+
+    fun addToHome(pkg: String) {
+        if (layout.items.any { it.key == pkg }) return
+        val (p, x, y) = layout.firstFreeSlot(pagerState.currentPage)
+        updateLayout(layout.copy(items = layout.items + LayoutItem(ItemType.APP, pkg, x, y, page = p)))
+    }
+
+    var pendingPage by remember { mutableIntStateOf(-1) }
+
+    fun moveToPage(item: LayoutItem, newPage: Int) {
+        val np = newPage.coerceAtLeast(0)
+        val slot = layout.firstFreeSlot(np)
+        updateLayout(
+            layout.copy(
+                items = layout.items.map {
+                    if (it.key == item.key) it.copy(page = np, cellX = slot.second, cellY = slot.third) else it
+                },
+            ),
+        )
+        pendingPage = np // ページ数更新後に LaunchedEffect でスクロール
+    }
+
+    // 新ページ作成後、pageCount が反映されてから追従スクロールする。
+    LaunchedEffect(pendingPage, layout) {
+        if (pendingPage >= 0) {
+            runCatching { pagerState.animateScrollToPage(pendingPage.coerceIn(0, maxOf(0, layout.pageCount() - 1))) }
+            pendingPage = -1
+        }
+    }
+
+    // --- ウィジェット追加フロー ---
     var pendingWidgetId by rememberSaveable { mutableStateOf(-1) }
 
     fun placeWidget(id: Int, info: AppWidgetProviderInfo) {
         val density = context.resources.displayMetrics.density
         val sx = ceil(info.minWidth / density / 90f).toInt().coerceIn(1, Grid.COLUMNS)
         val sy = ceil(info.minHeight / density / 110f).toInt().coerceIn(1, Grid.ROWS)
-        val cell = layout.firstEmptyCell() ?: (0 to 0)
+        val (p, x, y) = layout.firstFreeSlot(pagerState.currentPage)
         updateLayout(
-            layout.copy(
-                items = layout.items + LayoutItem(ItemType.WIDGET, id.toString(), cell.first, cell.second, sx, sy),
-            ),
+            layout.copy(items = layout.items + LayoutItem(ItemType.WIDGET, id.toString(), x, y, sx, sy, page = p)),
         )
     }
 
@@ -152,7 +199,6 @@ fun OshiLauncherApp(repo: AppRepository, store: CustomizationStore, widgetHost: 
                 component = info.configure
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
             }
-            // configure Activity は起動できないことがある（非公開等）→その場合はそのまま配置。
             runCatching { configureLauncher.launch(intent) }.onFailure { placeWidget(id, info) }
         } else {
             placeWidget(id, info)
@@ -184,9 +230,7 @@ fun OshiLauncherApp(repo: AppRepository, store: CustomizationStore, widgetHost: 
     }
 
     fun removeItem(item: LayoutItem) {
-        if (item.type == ItemType.WIDGET) {
-            item.key.toIntOrNull()?.let { widgetHost.deleteAppWidgetId(it) }
-        }
+        if (item.type == ItemType.WIDGET) item.key.toIntOrNull()?.let { widgetHost.deleteAppWidgetId(it) }
         updateLayout(layout.copy(items = layout.items.filterNot { it.key == item.key }))
     }
 
@@ -229,41 +273,44 @@ fun OshiLauncherApp(repo: AppRepository, store: CustomizationStore, widgetHost: 
                 apps = apps,
                 repo = repo,
                 layout = layout,
+                pagerState = pagerState,
                 widgetHost = widgetHost,
                 awm = awm,
-                onLaunch = { repo.launch(it) },
+                onLaunch = ::launch,
                 onChange = ::updateLayout,
                 onRemove = ::removeItem,
+                onMoveToPage = ::moveToPage,
                 onOpenDrawer = { showDrawer = true },
                 onOpenWidgets = { showWidgetPicker = true },
                 onOpenSettings = { showSettings = true },
             )
         }
 
-        if (showSettings) {
-            CustomizeScreen(apps, repo, store, onClose = { closeSettings() })
-        }
+        if (showSettings) CustomizeScreen(apps, repo, store, onClose = { closeSettings() })
+
         if (showDrawer) {
+            val ordered = remember(apps) {
+                val times = store.launchTimes()
+                apps.sortedWith(
+                    compareByDescending<AppEntry> { times[it.packageName] ?: 0L }.thenBy { it.label.lowercase() },
+                )
+            }
             val placed = remember(layout) { layout.items.mapTo(HashSet()) { it.key } }
-            val addable = remember(apps, placed) { apps.filter { it.packageName !in placed } }
             ModalBottomSheet(
                 onDismissRequest = { showDrawer = false },
                 sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
                 containerColor = ColorSheet,
             ) {
-                AppDrawer(addable, repo) { app ->
-                    layout.firstEmptyCell()?.let { cell ->
-                        updateLayout(
-                            layout.copy(
-                                items = layout.items +
-                                    LayoutItem(ItemType.APP, app.packageName, cell.first, cell.second),
-                            ),
-                        )
-                    }
-                    showDrawer = false
-                }
+                AppDrawer(
+                    apps = ordered,
+                    placedKeys = placed,
+                    repo = repo,
+                    onLaunch = { launch(it); showDrawer = false },
+                    onAdd = { addToHome(it); showDrawer = false },
+                )
             }
         }
+
         if (showWidgetPicker) {
             val providers = remember { awm.installedProviders.sortedBy { it.loadLabel(context.packageManager) } }
             ModalBottomSheet(
@@ -282,11 +329,13 @@ private fun HomeContent(
     apps: List<AppEntry>,
     repo: AppRepository,
     layout: HomeLayout,
+    pagerState: PagerState,
     widgetHost: AppWidgetHost,
     awm: AppWidgetManager,
     onLaunch: (String) -> Unit,
     onChange: (HomeLayout) -> Unit,
     onRemove: (LayoutItem) -> Unit,
+    onMoveToPage: (LayoutItem, Int) -> Unit,
     onOpenDrawer: () -> Unit,
     onOpenWidgets: () -> Unit,
     onOpenSettings: () -> Unit,
@@ -301,34 +350,69 @@ private fun HomeContent(
         }
     }
 
-    Column(Modifier.fillMaxSize().padding(horizontal = 10.dp)) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .padding(horizontal = 10.dp)
+            .pointerInput(Unit) {
+                var acc = 0f
+                detectVerticalDragGestures(
+                    onDragStart = { acc = 0f },
+                    onVerticalDrag = { _, dy ->
+                        acc += dy
+                        if (acc < -120f) { onOpenDrawer(); acc = Float.MAX_VALUE }
+                    },
+                )
+            },
+    ) {
         Row(Modifier.fillMaxWidth().padding(top = 36.dp, end = 8.dp), horizontalArrangement = Arrangement.End) {
             Text("⚙", fontSize = 18.sp, color = Color.White, style = labelStyle,
                 modifier = Modifier.clickable(onClick = onOpenSettings).padding(8.dp))
         }
-        Text(timeFormat.format(now), fontSize = 48.sp, fontWeight = FontWeight.Light, color = Color.White,
+        Text(timeFormat.format(now), fontSize = 44.sp, fontWeight = FontWeight.Light, color = Color.White,
             style = labelStyle, modifier = Modifier.align(Alignment.CenterHorizontally))
         Text(dateFormat.format(now), fontSize = 13.sp, color = Color.White.copy(alpha = 0.9f),
             style = labelStyle, modifier = Modifier.align(Alignment.CenterHorizontally))
 
-        Spacer(Modifier.height(10.dp))
+        Spacer(Modifier.height(8.dp))
 
-        HomeGrid(
-            layout = layout,
-            apps = apps,
-            repo = repo,
-            widgetHost = widgetHost,
-            awm = awm,
-            onLaunch = onLaunch,
-            onChange = onChange,
-            onRemove = onRemove,
-            onOpenWidgets = onOpenWidgets,
-            onOpenSettings = onOpenSettings,
-            modifier = Modifier.weight(1f).fillMaxWidth(),
-        )
+        Box(Modifier.weight(1f).fillMaxWidth()) {
+            HorizontalPager(state = pagerState, modifier = Modifier.fillMaxSize()) { page ->
+                HomeGrid(
+                    page = page,
+                    layout = layout,
+                    apps = apps,
+                    repo = repo,
+                    widgetHost = widgetHost,
+                    awm = awm,
+                    onLaunch = onLaunch,
+                    onChange = onChange,
+                    onRemove = onRemove,
+                    onMoveToPage = onMoveToPage,
+                    onOpenWidgets = onOpenWidgets,
+                    onOpenSettings = onOpenSettings,
+                    modifier = Modifier.fillMaxSize(),
+                )
+            }
+            // ページインジケータ
+            if (pagerState.pageCount > 1) {
+                Row(
+                    Modifier.align(Alignment.BottomCenter).padding(bottom = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    repeat(pagerState.pageCount) { i ->
+                        val active = i == pagerState.currentPage
+                        Box(
+                            Modifier.size(if (active) 8.dp else 6.dp).clip(CircleShape)
+                                .background(Color.White.copy(alpha = if (active) 0.95f else 0.4f)),
+                        )
+                    }
+                }
+            }
+        }
 
         Row(
-            Modifier.fillMaxWidth().padding(vertical = 12.dp),
+            Modifier.fillMaxWidth().padding(vertical = 10.dp),
             horizontalArrangement = Arrangement.spacedBy(24.dp, Alignment.CenterHorizontally),
         ) {
             Text("︿ アプリ", fontSize = 13.sp, color = Color.White, style = labelStyle,
@@ -341,6 +425,7 @@ private fun HomeContent(
 
 @Composable
 private fun HomeGrid(
+    page: Int,
     layout: HomeLayout,
     apps: List<AppEntry>,
     repo: AppRepository,
@@ -349,6 +434,7 @@ private fun HomeGrid(
     onLaunch: (String) -> Unit,
     onChange: (HomeLayout) -> Unit,
     onRemove: (LayoutItem) -> Unit,
+    onMoveToPage: (LayoutItem, Int) -> Unit,
     onOpenWidgets: () -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
@@ -357,6 +443,7 @@ private fun HomeGrid(
     val byPkg = remember(apps) { apps.associateBy { it.packageName } }
     var draggingKey by remember { mutableStateOf<String?>(null) }
     var dragDelta by remember { mutableStateOf(Offset.Zero) }
+    var grabOffset by remember { mutableStateOf(Offset.Zero) } // 長押し開始点（アイテム内ローカル座標）
     var menuOpen by remember { mutableStateOf(false) }
     var menuPos by remember { mutableStateOf(Offset.Zero) }
 
@@ -367,7 +454,36 @@ private fun HomeGrid(
         val cellWpx = with(density) { cellW.toPx() }
         val cellHpx = with(density) { cellH.toPx() }
 
-        // 背景（空きセル）長押しで、標準ランチャー風メニューを長押し位置に出す。
+        fun commitDrop(item: LayoutItem) {
+            val rawX = (item.cellX * cellWpx + dragDelta.x) / cellWpx
+            val rawY = (item.cellY * cellHpx + dragDelta.y) / cellHpx
+            // 指のグリッド列位置（アイテムは画面内でも、指は端まで動かせる）。
+            val fingerCol = (item.cellX * cellWpx + grabOffset.x + dragDelta.x) / cellWpx
+            when {
+                rawY < -0.5f -> onRemove(item)
+                fingerCol >= Grid.COLUMNS - 0.15f -> onMoveToPage(item, page + 1) // 指が右端
+                fingerCol <= 0.15f && page > 0 -> onMoveToPage(item, page - 1) // 指が左端
+                else -> {
+                    val tx = rawX.roundToInt().coerceIn(0, Grid.COLUMNS - item.spanX)
+                    val ty = rawY.roundToInt().coerceIn(0, Grid.ROWS - item.spanY)
+                    val occupant = layout.itemAt(page, tx, ty)
+                    val newItems = when {
+                        occupant == null || occupant.key == item.key ->
+                            layout.items.map { if (it.key == item.key) it.copy(cellX = tx, cellY = ty) else it }
+                        else -> layout.items.map {
+                            when (it.key) {
+                                item.key -> it.copy(cellX = tx, cellY = ty)
+                                occupant.key -> it.copy(cellX = item.cellX, cellY = item.cellY)
+                                else -> it
+                            }
+                        }
+                    }
+                    onChange(layout.copy(items = newItems))
+                }
+            }
+        }
+
+        // 背景長押し → 標準ランチャー風メニュー
         Box(
             Modifier.fillMaxSize().pointerInput(Unit) {
                 detectTapGestures(onLongPress = { pos -> menuPos = pos; menuOpen = true })
@@ -378,46 +494,32 @@ private fun HomeGrid(
                 DropdownMenuItem(text = { Text("ウィジェット") }, onClick = { menuOpen = false; onOpenWidgets() })
                 DropdownMenuItem(
                     text = { Text("壁紙") },
-                    onClick = {
-                        menuOpen = false
-                        runCatching { context.startActivity(Intent(Intent.ACTION_SET_WALLPAPER)) }
-                    },
+                    onClick = { menuOpen = false; runCatching { context.startActivity(Intent(Intent.ACTION_SET_WALLPAPER)) } },
                 )
                 DropdownMenuItem(text = { Text("設定") }, onClick = { menuOpen = false; onOpenSettings() })
             }
         }
 
-        fun commitDrop(item: LayoutItem) {
-            val rawX = (item.cellX * cellWpx + dragDelta.x) / cellWpx
-            val rawY = (item.cellY * cellHpx + dragDelta.y) / cellHpx
-            if (rawY < -0.5f) {
-                onRemove(item)
-                return
-            }
-            val tx = rawX.roundToInt().coerceIn(0, Grid.COLUMNS - item.spanX)
-            val ty = rawY.roundToInt().coerceIn(0, Grid.ROWS - item.spanY)
-            val occupant = layout.itemAt(tx, ty)
-            val newItems = when {
-                occupant == null || occupant.key == item.key ->
-                    layout.items.map { if (it.key == item.key) it.copy(cellX = tx, cellY = ty) else it }
-                else -> layout.items.map {
-                    when (it.key) {
-                        item.key -> it.copy(cellX = tx, cellY = ty)
-                        occupant.key -> it.copy(cellX = item.cellX, cellY = item.cellY)
-                        else -> it
-                    }
-                }
-            }
-            onChange(layout.copy(items = newItems))
-        }
-
         if (draggingKey != null) {
             Box(Modifier.fillMaxWidth().height(cellH).zIndex(2f), contentAlignment = Alignment.Center) {
-                Text("🗑 ここにドロップで削除", fontSize = 12.sp, color = Color.White, style = labelStyle)
+                Text("🗑 上にドロップで削除", fontSize = 11.sp, color = Color.White, style = labelStyle)
+            }
+            // 左右端：中心を端まで運ぶと隣ページへ
+            Box(
+                Modifier.align(Alignment.CenterEnd).fillMaxHeight().width(cellW * 0.5f).zIndex(2f)
+                    .background(Color.White.copy(alpha = 0.10f)),
+                contentAlignment = Alignment.Center,
+            ) { Text("→\n次", fontSize = 12.sp, color = Color.White, style = labelStyle, textAlign = TextAlign.Center) }
+            if (page > 0) {
+                Box(
+                    Modifier.align(Alignment.CenterStart).fillMaxHeight().width(cellW * 0.5f).zIndex(2f)
+                        .background(Color.White.copy(alpha = 0.10f)),
+                    contentAlignment = Alignment.Center,
+                ) { Text("←\n前", fontSize = 12.sp, color = Color.White, style = labelStyle, textAlign = TextAlign.Center) }
             }
         }
 
-        layout.items.forEach { item ->
+        layout.itemsOnPage(page).forEach { item ->
             val isDragging = item.key == draggingKey
             val baseX = item.cellX * cellWpx
             val baseY = item.cellY * cellHpx
@@ -430,9 +532,9 @@ private fun HomeGrid(
                 }
                 .size(width = cellW * item.spanX, height = cellH * item.spanY)
                 .zIndex(if (isDragging) 3f else 0f)
-                .pointerInput(item.key, layout) {
+                .pointerInput(item.key, layout, page) {
                     detectDragGesturesAfterLongPress(
-                        onDragStart = { draggingKey = item.key; dragDelta = Offset.Zero },
+                        onDragStart = { off -> draggingKey = item.key; dragDelta = Offset.Zero; grabOffset = off },
                         onDrag = { change, delta -> change.consume(); dragDelta += delta },
                         onDragEnd = { commitDrop(item); draggingKey = null; dragDelta = Offset.Zero },
                         onDragCancel = { draggingKey = null; dragDelta = Offset.Zero },
@@ -451,10 +553,7 @@ private fun HomeGrid(
                     val id = item.key.toIntOrNull()
                     val info = if (id != null) awm.getAppWidgetInfo(id) else null
                     if (id != null && info != null) {
-                        AndroidView(
-                            factory = { ctx -> widgetHost.createView(ctx, id, info) },
-                            modifier = Modifier.fillMaxSize(),
-                        )
+                        AndroidView(factory = { ctx -> widgetHost.createView(ctx, id, info) }, modifier = Modifier.fillMaxSize())
                     } else {
                         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                             Text("ウィジェット", fontSize = 11.sp, color = Color.White, style = labelStyle)
@@ -476,25 +575,67 @@ private fun IconCell(packageName: String, label: String, repo: AppRepository) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun AppDrawer(apps: List<AppEntry>, repo: AppRepository, onPick: (AppEntry) -> Unit) {
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(4),
-        modifier = Modifier.fillMaxHeight(0.88f).padding(horizontal = 12.dp),
-    ) {
-        items(apps, key = { it.packageName }) { app ->
-            Column(
-                Modifier.clickable { onPick(app) }.padding(vertical = 12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-            ) {
-                AppIconImage(app.packageName, repo, 48.dp)
-                Spacer(Modifier.height(6.dp))
-                Text(app.label, fontSize = 11.sp, color = ColorText,
-                    maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+private fun AppDrawer(
+    apps: List<AppEntry>,
+    placedKeys: Set<String>,
+    repo: AppRepository,
+    onLaunch: (String) -> Unit,
+    onAdd: (String) -> Unit,
+) {
+    var query by remember { mutableStateOf("") }
+    val filtered = remember(query, apps) {
+        if (query.isBlank()) {
+            apps
+        } else {
+            val q = query.lowercase()
+            val prefix = apps.filter { it.label.lowercase().startsWith(q) }
+            val contains = apps.filter { it.label.lowercase().contains(q) } - prefix.toSet()
+            prefix + contains
+        }
+    }
+    Column(Modifier.fillMaxHeight(0.9f).padding(horizontal = 12.dp)) {
+        OutlinedTextField(
+            value = query,
+            onValueChange = { query = it },
+            placeholder = { Text("アプリを検索") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+        )
+        Text("タップで起動 / 長押しでホームに追加", fontSize = 11.sp, color = ColorSub,
+            modifier = Modifier.padding(start = 4.dp, bottom = 4.dp))
+        LazyVerticalGrid(columns = GridCells.Fixed(4), modifier = Modifier.fillMaxHeight()) {
+            items(filtered, key = { it.packageName }) { app ->
+                val onHome = app.packageName in placedKeys
+                Column(
+                    Modifier
+                        .padding(vertical = 12.dp)
+                        .pointerInput(app.packageName) {
+                            detectTapGestures(
+                                onTap = { onLaunch(app.packageName) },
+                                onLongPress = { onAdd(app.packageName) },
+                            )
+                        },
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
+                    AppIconImage(app.packageName, repo, 48.dp)
+                    Spacer(Modifier.height(6.dp))
+                    Text(app.label + if (onHome) " •" else "", fontSize = 11.sp,
+                        color = if (onHome) ColorDim else ColorText,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis, textAlign = TextAlign.Center)
+                }
             }
         }
     }
 }
+
+private class WidgetEntry(
+    val info: AppWidgetProviderInfo,
+    val appLabel: String,
+    val widgetLabel: String,
+    val sizeText: String,
+)
 
 @Composable
 private fun WidgetPicker(
@@ -502,18 +643,60 @@ private fun WidgetPicker(
     pm: android.content.pm.PackageManager,
     onPick: (AppWidgetProviderInfo) -> Unit,
 ) {
-    Column(
-        Modifier.fillMaxHeight(0.85f).padding(horizontal = 20.dp).verticalScroll(rememberScrollState()),
-    ) {
-        Text("ウィジェットを追加", fontSize = 16.sp, color = ColorText, modifier = Modifier.padding(vertical = 8.dp))
-        providers.forEach { info ->
-            val label = remember(info) { info.loadLabel(pm) }
+    val context = LocalContext.current
+    val entries = remember(providers) {
+        val density = context.resources.displayMetrics.density
+        providers.map { info ->
+            val appLabel = runCatching {
+                pm.getApplicationLabel(pm.getApplicationInfo(info.provider.packageName, 0)).toString()
+            }.getOrDefault(info.provider.packageName)
+            val sx = ceil(info.minWidth / density / 90f).toInt().coerceIn(1, Grid.COLUMNS)
+            val sy = ceil(info.minHeight / density / 110f).toInt().coerceIn(1, Grid.ROWS)
+            WidgetEntry(info, appLabel, info.loadLabel(pm), "$sx×$sy")
+        }.sortedWith(compareBy({ it.appLabel.lowercase() }, { it.widgetLabel.lowercase() }))
+    }
+    Column(Modifier.fillMaxHeight(0.9f).padding(horizontal = 16.dp).verticalScroll(rememberScrollState())) {
+        Text("ウィジェットを追加", fontSize = 16.sp, fontWeight = FontWeight.Medium, color = ColorText,
+            modifier = Modifier.padding(vertical = 10.dp))
+        var lastApp: String? = null
+        entries.forEach { e ->
+            if (e.appLabel != lastApp) {
+                lastApp = e.appLabel
+                Text(e.appLabel, fontSize = 12.sp, color = ColorAccent,
+                    modifier = Modifier.padding(top = 14.dp, bottom = 4.dp))
+            }
             Row(
-                Modifier.fillMaxWidth().clickable { onPick(info) }.padding(vertical = 12.dp),
+                Modifier.fillMaxWidth().clickable { onPick(e.info) }.padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text(label, fontSize = 14.sp, color = ColorText)
+                WidgetPreview(e.info, Modifier.size(width = 84.dp, height = 56.dp).background(ColorTile))
+                Spacer(Modifier.width(14.dp))
+                Column {
+                    Text(e.widgetLabel, fontSize = 14.sp, color = ColorText, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Text(e.sizeText, fontSize = 11.sp, color = ColorDim)
+                }
+            }
+        }
+        Spacer(Modifier.height(24.dp))
+    }
+}
+
+/** ウィジェットのプレビュー画像（無ければ提供アイコン）を非同期で読み込んで表示。 */
+@Composable
+private fun WidgetPreview(info: AppWidgetProviderInfo, modifier: Modifier) {
+    val context = LocalContext.current
+    var bmp by remember(info) { mutableStateOf<ImageBitmap?>(null) }
+    LaunchedEffect(info) {
+        bmp = withContext(Dispatchers.IO) {
+            val d = runCatching { info.loadPreviewImage(context, 0) }.getOrNull()
+                ?: runCatching { info.loadIcon(context, 0) }.getOrNull()
+            d?.let { dr ->
+                runCatching { dr.toBitmap().asImageBitmap() }.getOrNull()
+                    ?: runCatching { dr.toBitmap(220, 140).asImageBitmap() }.getOrNull()
             }
         }
     }
+    val b = bmp
+    if (b != null) Image(b, contentDescription = null, modifier = modifier, contentScale = ContentScale.Fit)
+    else Box(modifier)
 }
