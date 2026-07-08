@@ -27,7 +27,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import jp.mydns.kokoichi206.oshilauncher.data.AppEntry
 import jp.mydns.kokoichi206.oshilauncher.data.AppRepository
 import jp.mydns.kokoichi206.oshilauncher.data.CustomizationStore
+import jp.mydns.kokoichi206.oshilauncher.data.OshiProfile
 import jp.mydns.kokoichi206.oshilauncher.data.WallpaperTransition
 import jp.mydns.kokoichi206.oshilauncher.wallpaper.SlideshowWallpaperService
 import kotlinx.coroutines.Dispatchers
@@ -108,6 +112,10 @@ fun CustomizeScreen(
         ActivityResultContracts.StartActivityForResult(),
     ) { bumpLocal() }
 
+    var addingProfile by remember { mutableStateOf(false) }
+    var renameTarget by remember { mutableStateOf<OshiProfile?>(null) }
+    var deleteTarget by remember { mutableStateOf<OshiProfile?>(null) }
+
     fun openLiveWallpaperPicker() {
         val intent = Intent(WallpaperManager.ACTION_CHANGE_LIVE_WALLPAPER).apply {
             putExtra(
@@ -143,24 +151,35 @@ fun CustomizeScreen(
             LazyColumn(Modifier.weight(1f)) {
                 item {
                     val oshiMode = remember(localRevision) { store.isOshiMode() }
+                    val profiles = remember(localRevision) { store.profiles() }
+                    val activeId = remember(localRevision) { store.activeProfile().id }
                     SectionTitle("表示モード")
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TransitionChip("推しモード", "背景・アイコン", selected = oshiMode) {
-                            store.setOshiMode(true); bumpLocal()
-                        }
-                        TransitionChip("通常モード", "標準の見た目", selected = !oshiMode) {
-                            store.setOshiMode(false); bumpLocal()
-                        }
+                    ModeRow(
+                        name = "一般モード",
+                        sub = "元のホームと同じ",
+                        selected = !oshiMode,
+                        onSelect = { store.setOshiMode(false); bumpLocal() },
+                    )
+                    profiles.forEach { p ->
+                        ModeRow(
+                            name = p.name,
+                            sub = "推し活モード（専用の背景・アイコン・配置）",
+                            selected = oshiMode && p.id == activeId,
+                            onSelect = { store.setActiveProfile(p.id); store.setOshiMode(true); bumpLocal() },
+                            onRename = { renameTarget = p },
+                            onDelete = if (profiles.size > 1) fun() { deleteTarget = p } else null,
+                        )
                     }
-                    Text("※ ホームを2本指でタップしても切り替わります。", fontSize = 11.sp, color = ColorDim,
-                        modifier = Modifier.padding(top = 8.dp))
+                    Chip("＋ 推し活モードを追加") { addingProfile = true }
+                    Text("※ ホームを2本指でトンとタップすると、一般モード⇄選んだ推し活モードがその場で切り替わります（ステルススイッチ）。",
+                        fontSize = 11.sp, color = ColorDim, modifier = Modifier.padding(top = 8.dp))
 
                     Spacer(Modifier.height(14.dp))
                     val shared = remember(localRevision) { store.isSharedLayout() }
                     Text("配置（アイコン/ウィジェット）", fontSize = 12.sp, color = ColorDim,
                         modifier = Modifier.padding(bottom = 8.dp))
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        TransitionChip("モードごとに分ける", "通常/推しで別配置", selected = !shared) {
+                        TransitionChip("モードごとに分ける", "一般/推し活で別配置", selected = !shared) {
                             store.setSharedLayout(false, store.isOshiMode()); bumpLocal()
                         }
                         TransitionChip("両モード共通", "配置は1つ", selected = shared) {
@@ -183,7 +202,8 @@ fun CustomizeScreen(
                     Spacer(Modifier.height(26.dp))
                 }
                 item {
-                    SectionTitle("推し背景スライドショー")
+                    val activeName = remember(localRevision) { store.activeProfile().name }
+                    SectionTitle("推し背景スライドショー 〔$activeName〕")
                     IntervalRow(store)
                     Spacer(Modifier.height(14.dp))
                     Text("切替アニメ", fontSize = 12.sp, color = ColorDim, modifier = Modifier.padding(bottom = 8.dp))
@@ -207,7 +227,7 @@ fun CustomizeScreen(
                     Chip("ロック画面/ホームのライブ壁紙に設定") { openLiveWallpaperPicker() }
 
                     Spacer(Modifier.height(26.dp))
-                    SectionTitle("アイコンを画像に差し替え")
+                    SectionTitle("アイコンを画像に差し替え 〔$activeName〕")
                     Text(
                         "OshiLauncher 内の表示だけが変わります（他のホームアプリには影響しません）。",
                         fontSize = 11.sp,
@@ -242,6 +262,109 @@ fun CustomizeScreen(
 
                 item { Spacer(Modifier.height(40.dp)) }
             }
+        }
+
+        if (addingProfile) {
+            ProfileNameDialog(
+                title = "推し活モードを追加",
+                initial = "",
+                onConfirm = { name ->
+                    store.setActiveProfile(store.addProfile(name).id)
+                    store.setOshiMode(true)
+                    addingProfile = false
+                    bumpLocal()
+                },
+                onDismiss = { addingProfile = false },
+            )
+        }
+        renameTarget?.let { p ->
+            ProfileNameDialog(
+                title = "モード名を変更",
+                initial = p.name,
+                onConfirm = { name ->
+                    store.renameProfile(p.id, name)
+                    renameTarget = null
+                    bumpLocal()
+                },
+                onDismiss = { renameTarget = null },
+            )
+        }
+        deleteTarget?.let { p ->
+            AlertDialog(
+                onDismissRequest = { deleteTarget = null },
+                title = { Text("「${p.name}」を削除しますか？") },
+                text = { Text("このモード専用の背景・アイコン・配置も削除されます。") },
+                confirmButton = {
+                    TextButton(onClick = {
+                        store.removeProfile(p.id)
+                        deleteTarget = null
+                        bumpLocal()
+                    }) { Text("削除") }
+                },
+                dismissButton = { TextButton(onClick = { deleteTarget = null }) { Text("キャンセル") } },
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProfileNameDialog(
+    title: String,
+    initial: String,
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var name by remember { mutableStateOf(initial) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(title) },
+        text = {
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                placeholder = { Text("例: ブルーロックモード") },
+                singleLine = true,
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = { name.trim().takeIf { it.isNotEmpty() }?.let(onConfirm) }) { Text("OK") }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text("キャンセル") } },
+    )
+}
+
+/** 表示モードの縦並び 1 行。横スクロールを避けるため全幅で積む。 */
+@Composable
+private fun ModeRow(
+    name: String,
+    sub: String,
+    selected: Boolean,
+    onSelect: () -> Unit,
+    onRename: (() -> Unit)? = null,
+    onDelete: (() -> Unit)? = null,
+) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(bottom = 8.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(if (selected) ColorAccent.copy(alpha = 0.22f) else ColorTile)
+            .border(1.dp, if (selected) ColorAccent else Color.Transparent, RoundedCornerShape(12.dp))
+            .clickable(onClick = onSelect)
+            .padding(horizontal = 14.dp, vertical = 11.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(name, fontSize = 14.sp, color = ColorText)
+            Text(sub, fontSize = 10.sp, color = if (selected) ColorAccent else ColorDim)
+        }
+        if (onRename != null) {
+            Text("✎", fontSize = 14.sp, color = ColorSub,
+                modifier = Modifier.clickable(onClick = onRename).padding(horizontal = 8.dp, vertical = 4.dp))
+        }
+        if (onDelete != null) {
+            Text("削除", fontSize = 11.sp, color = ColorSub,
+                modifier = Modifier.clickable(onClick = onDelete).padding(horizontal = 8.dp, vertical = 4.dp))
         }
     }
 }

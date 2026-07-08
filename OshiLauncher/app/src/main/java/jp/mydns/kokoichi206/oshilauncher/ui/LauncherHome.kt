@@ -6,6 +6,10 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProviderInfo
 import android.content.Intent
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -123,12 +127,22 @@ fun OshiLauncherApp(repo: AppRepository, store: CustomizationStore, widgetHost: 
 
     LaunchedEffect(apps, revision) {
         if (apps.isNotEmpty() && layout.items.isEmpty()) {
+            // 推し活モードの初期配置は上段にフォトカードを敷き、WidgetClub 風の見た目から始める。
             updateLayout(
-                HomeLayout(
-                    apps.take(Grid.COLUMNS * 3).mapIndexed { i, app ->
-                        LayoutItem(ItemType.APP, app.packageName, i % Grid.COLUMNS, i / Grid.COLUMNS)
-                    },
-                ),
+                if (oshiMode) {
+                    HomeLayout(
+                        listOf(LayoutItem(ItemType.PHOTO, "photo_seed", 0, 0, Grid.COLUMNS, 2)) +
+                            apps.take(Grid.COLUMNS * 2).mapIndexed { i, app ->
+                                LayoutItem(ItemType.APP, app.packageName, i % Grid.COLUMNS, 2 + i / Grid.COLUMNS)
+                            },
+                    )
+                } else {
+                    HomeLayout(
+                        apps.take(Grid.COLUMNS * 3).mapIndexed { i, app ->
+                            LayoutItem(ItemType.APP, app.packageName, i % Grid.COLUMNS, i / Grid.COLUMNS)
+                        },
+                    )
+                },
             )
         }
     }
@@ -234,6 +248,16 @@ fun OshiLauncherApp(repo: AppRepository, store: CustomizationStore, widgetHost: 
         updateLayout(layout.copy(items = layout.items.filterNot { it.key == item.key }))
     }
 
+    fun addPhotoCard() {
+        val (p, x, y) = layout.firstFreeSlotFor(2, 2, pagerState.currentPage)
+        updateLayout(
+            layout.copy(
+                items = layout.items +
+                    LayoutItem(ItemType.PHOTO, "photo_${System.currentTimeMillis()}", x, y, 2, 2, page = p),
+            ),
+        )
+    }
+
     fun closeSettings() {
         showSettings = false
         revision++
@@ -253,21 +277,41 @@ fun OshiLauncherApp(repo: AppRepository, store: CustomizationStore, widgetHost: 
             Modifier
                 .fillMaxSize()
                 .pointerInput(revision) {
+                    // ステルススイッチ: 2本指の「タップ」（動かさず・すぐ離す）だけに反応する。
+                    // 移動量と押下時間で弾かないと、ピンチや長押しのたびにモードが切り替わってしまう。
+                    val slop = viewConfiguration.touchSlop * 3
                     awaitPointerEventScope {
                         while (true) {
-                            val ev = awaitPointerEvent(PointerEventPass.Initial)
-                            if (ev.changes.count { it.pressed } >= 2) {
+                            var ev = awaitPointerEvent(PointerEventPass.Initial)
+                            if (ev.changes.count { it.pressed } < 2) continue
+                            val start = ev.changes.filter { it.pressed }.associate { it.id to it.position }
+                            val startTime = ev.changes.maxOf { it.uptimeMillis }
+                            var isTap = true
+                            while (ev.changes.any { it.pressed }) {
+                                ev = awaitPointerEvent(PointerEventPass.Initial)
+                                val moved = ev.changes.any { c ->
+                                    val s = start[c.id] ?: return@any false
+                                    (c.position - s).getDistance() > slop
+                                }
+                                val held = ev.changes.maxOf { it.uptimeMillis } - startTime > 350
+                                if (moved || held) isTap = false
+                            }
+                            if (isTap) {
                                 store.setOshiMode(!store.isOshiMode())
                                 revision++
-                                do {
-                                    val e2 = awaitPointerEvent(PointerEventPass.Initial)
-                                } while (e2.changes.any { it.pressed })
                             }
                         }
                     }
                 },
         ) {
-            if (oshiMode) WallpaperLayer(store, revision, Modifier.fillMaxSize())
+            // 人に見せる瞬間の切替が自然に見えるよう、背景はフェードで出し入れする。
+            AnimatedVisibility(
+                visible = oshiMode,
+                enter = fadeIn(tween(400)),
+                exit = fadeOut(tween(400)),
+            ) {
+                WallpaperLayer(store, revision, Modifier.fillMaxSize())
+            }
 
             HomeContent(
                 apps = apps,
@@ -276,12 +320,14 @@ fun OshiLauncherApp(repo: AppRepository, store: CustomizationStore, widgetHost: 
                 pagerState = pagerState,
                 widgetHost = widgetHost,
                 awm = awm,
+                oshiMode = oshiMode,
                 onLaunch = ::launch,
                 onChange = ::updateLayout,
                 onRemove = ::removeItem,
                 onMoveToPage = ::moveToPage,
                 onOpenDrawer = { showDrawer = true },
                 onOpenWidgets = { showWidgetPicker = true },
+                onAddPhoto = ::addPhotoCard,
                 onOpenSettings = { showSettings = true },
             )
         }
@@ -332,12 +378,14 @@ private fun HomeContent(
     pagerState: PagerState,
     widgetHost: AppWidgetHost,
     awm: AppWidgetManager,
+    oshiMode: Boolean,
     onLaunch: (String) -> Unit,
     onChange: (HomeLayout) -> Unit,
     onRemove: (LayoutItem) -> Unit,
     onMoveToPage: (LayoutItem, Int) -> Unit,
     onOpenDrawer: () -> Unit,
     onOpenWidgets: () -> Unit,
+    onAddPhoto: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     val timeFormat = remember { SimpleDateFormat("H:mm", Locale.JAPAN) }
@@ -385,11 +433,13 @@ private fun HomeContent(
                     repo = repo,
                     widgetHost = widgetHost,
                     awm = awm,
+                    oshiMode = oshiMode,
                     onLaunch = onLaunch,
                     onChange = onChange,
                     onRemove = onRemove,
                     onMoveToPage = onMoveToPage,
                     onOpenWidgets = onOpenWidgets,
+                    onAddPhoto = onAddPhoto,
                     onOpenSettings = onOpenSettings,
                     modifier = Modifier.fillMaxSize(),
                 )
@@ -431,11 +481,13 @@ private fun HomeGrid(
     repo: AppRepository,
     widgetHost: AppWidgetHost,
     awm: AppWidgetManager,
+    oshiMode: Boolean,
     onLaunch: (String) -> Unit,
     onChange: (HomeLayout) -> Unit,
     onRemove: (LayoutItem) -> Unit,
     onMoveToPage: (LayoutItem, Int) -> Unit,
     onOpenWidgets: () -> Unit,
+    onAddPhoto: () -> Unit,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -491,6 +543,7 @@ private fun HomeGrid(
         )
         Box(Modifier.offset { IntOffset(menuPos.x.roundToInt(), menuPos.y.roundToInt()) }) {
             DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                DropdownMenuItem(text = { Text("推しフォトカード") }, onClick = { menuOpen = false; onAddPhoto() })
                 DropdownMenuItem(text = { Text("ウィジェット") }, onClick = { menuOpen = false; onOpenWidgets() })
                 DropdownMenuItem(
                     text = { Text("壁紙") },
@@ -519,7 +572,8 @@ private fun HomeGrid(
             }
         }
 
-        layout.itemsOnPage(page).forEach { item ->
+        // フォトカードは推し画像を映すので、一般モードでは（配置共有時でも）描画しない。
+        layout.itemsOnPage(page).filter { oshiMode || it.type != ItemType.PHOTO }.forEach { item ->
             val isDragging = item.key == draggingKey
             val baseX = item.cellX * cellWpx
             val baseY = item.cellY * cellHpx
@@ -547,6 +601,10 @@ private fun HomeGrid(
                     contentAlignment = Alignment.Center,
                 ) {
                     IconCell(item.key, byPkg[item.key]?.label ?: item.key, repo)
+                }
+
+                ItemType.PHOTO -> Box(cellModifier.padding(6.dp)) {
+                    OshiPhotoCard(item.key, Modifier.fillMaxSize())
                 }
 
                 ItemType.WIDGET -> Box(cellModifier.padding(4.dp)) {

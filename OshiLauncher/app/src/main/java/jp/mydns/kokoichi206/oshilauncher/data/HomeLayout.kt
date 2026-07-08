@@ -9,11 +9,12 @@ object Grid {
     const val ROWS = 6
 }
 
-enum class ItemType { APP, WIDGET }
+enum class ItemType { APP, WIDGET, PHOTO }
 
 /**
  * ホームに配置された1要素。
  * APP: key = packageName。WIDGET: key = appWidgetId。
+ * PHOTO: 推しフォトカード。key は配置ごとの一意 ID（表示開始位置をずらすシードを兼ねる）。
  * page でページ、(cellX, cellY) でそのページ内のセル左上、(spanX, spanY) で占有セル数。
  */
 data class LayoutItem(
@@ -79,6 +80,26 @@ data class HomeLayout(val items: List<LayoutItem> = emptyList()) {
         firstEmptyCell(preferredPage)?.let { return Triple(preferredPage, it.first, it.second) }
         for (p in 0..pageCount()) {
             firstEmptyCell(p)?.let { return Triple(p, it.first, it.second) }
+        }
+        return Triple(pageCount(), 0, 0)
+    }
+
+    /** spanX×spanY がまるごと空いているスロットを firstFreeSlot と同じ優先順で返す (page, x, y)。 */
+    fun firstFreeSlotFor(spanX: Int, spanY: Int, preferredPage: Int): Triple<Int, Int, Int> {
+        fun findOn(page: Int): Pair<Int, Int>? {
+            for (y in 0..Grid.ROWS - spanY) {
+                for (x in 0..Grid.COLUMNS - spanX) {
+                    val free = (0 until spanY).all { dy ->
+                        (0 until spanX).all { dx -> itemAt(page, x + dx, y + dy) == null }
+                    }
+                    if (free) return x to y
+                }
+            }
+            return null
+        }
+        findOn(preferredPage)?.let { return Triple(preferredPage, it.first, it.second) }
+        for (p in 0..pageCount()) {
+            findOn(p)?.let { return Triple(p, it.first, it.second) }
         }
         return Triple(pageCount(), 0, 0)
     }
