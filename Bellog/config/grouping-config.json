@@ -1,0 +1,90 @@
+{
+  "version": "1.0.0",
+  "defaults": {
+    "conversationKeyCandidates": [
+      {
+        "source": "shortcutId"
+      },
+      {
+        "source": "conversationTitle"
+      },
+      {
+        "source": "title"
+      },
+      {
+        "source": "fingerprint",
+        "fields": [
+          "notificationKey"
+        ]
+      }
+    ],
+    "messageKeyCandidates": [
+      {
+        "source": "messageExtra",
+        "key": "MESSAGE_ID"
+      },
+      {
+        "source": "fingerprint",
+        "fields": [
+          "notificationKey",
+          "timestamp",
+          "sender",
+          "message",
+          "mediaUri"
+        ]
+      }
+    ]
+  },
+  "packages": {
+    "jp.naver.line.android": {
+      "conversationKeyCandidates": [
+        {
+          "source": "extra",
+          "key": "line.chat.id"
+        },
+        {
+          "source": "shortcutId"
+        },
+        {
+          "source": "conversationTitle"
+        },
+        {
+          "source": "title"
+        }
+      ],
+      "messageKeyCandidates": [
+        {
+          "source": "messageExtra",
+          "key": "MESSAGE_ID"
+        },
+        {
+          "source": "extra",
+          "key": "line.message.id"
+        },
+        {
+          "source": "fingerprint",
+          "fields": [
+            "notificationKey",
+            "timestamp",
+            "sender",
+            "message",
+            "mediaUri"
+          ]
+        }
+      ]
+    },
+    "com.Slack": {
+      "conversationKeyCandidates": [
+        {
+          "source": "shortcutId"
+        },
+        {
+          "source": "conversationTitle"
+        },
+        {
+          "source": "title"
+        }
+      ]
+    }
+  }
+}
