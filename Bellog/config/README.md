@@ -4,6 +4,8 @@
 
 将来公開URLへ切り出す場合も、このJSON schemaとSemVerの規則を維持します。現在のアプリはネットワークへ接続しません。
 
+標準通知で取得できる情報、package固有設定が必要になる条件、configでは取得できない情報については[`docs/notification-extraction.md`](../docs/notification-extraction.md)を参照してください。
+
 ## Versioning
 
 - `patch`: 分類結果に影響しない変更のみ。分類ルールを変更したconfigはアプリが拒否します。
