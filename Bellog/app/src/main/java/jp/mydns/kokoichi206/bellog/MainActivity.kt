@@ -30,21 +30,38 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AddTask
+import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.lightColorScheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Switch
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -72,6 +89,7 @@ import jp.mydns.kokoichi206.bellog.data.NotificationGroup
 import jp.mydns.kokoichi206.bellog.data.NotificationContentType
 import jp.mydns.kokoichi206.bellog.data.NotificationRecord
 import jp.mydns.kokoichi206.bellog.data.NotificationStore
+import jp.mydns.kokoichi206.bellog.data.NotificationTask
 import jp.mydns.kokoichi206.bellog.data.SourcePreferences
 import jp.mydns.kokoichi206.bellog.config.GroupingConfigRepository
 import jp.mydns.kokoichi206.bellog.notification.ACTION_NOTIFICATIONS_CHANGED
@@ -114,7 +132,11 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContent { BellogTheme { BellogApp(revision.intValue) } }
+        val initialScreen = when (intent.action) {
+            ACTION_OPEN_SOURCES -> Screen.SETTINGS
+            else -> Screen.NOTIFICATIONS
+        }
+        setContent { BellogTheme { BellogApp(revision.intValue, initialScreen) } }
     }
 
     override fun onStart() {
@@ -146,18 +168,31 @@ private fun BellogTheme(content: @Composable () -> Unit) {
     )
 }
 
-private enum class Screen { INBOX, SOURCES, DETAIL }
+private enum class Screen { NOTIFICATIONS, TASKS, SETTINGS, DETAIL }
+
+private const val ACTION_OPEN_SOURCES = "jp.mydns.kokoichi206.bellog.action.OPEN_SOURCES"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun BellogApp(revision: Int) {
+private fun BellogApp(revision: Int, initialScreen: Screen) {
     val context = LocalContext.current
     val store = remember { NotificationStore(context.applicationContext) }
     val scope = rememberCoroutineScope()
+    val snackbarHostState = remember { SnackbarHostState() }
     var records by remember { mutableStateOf(emptyList<NotificationRecord>()) }
-    var screen by remember { mutableStateOf(Screen.INBOX) }
+    var tasks by remember { mutableStateOf(emptyList<NotificationTask>()) }
+    var screen by remember { mutableStateOf(initialScreen) }
     var selectedGroup by remember { mutableStateOf<NotificationGroup?>(null) }
     var notificationAccess by remember { mutableStateOf(false) }
+
+    suspend fun showUndoSnackbar(message: String): SnackbarResult {
+        snackbarHostState.currentSnackbarData?.dismiss()
+        return snackbarHostState.showSnackbar(
+            message = message,
+            actionLabel = "元に戻す",
+            duration = SnackbarDuration.Long,
+        )
+    }
 
     LaunchedEffect(Unit) {
         val reclassified = withContext(Dispatchers.IO) {
@@ -169,51 +204,131 @@ private fun BellogApp(revision: Int) {
 
     LaunchedEffect(revision) {
         notificationAccess = context.packageName in NotificationManagerCompat.getEnabledListenerPackages(context)
-        records = withContext(Dispatchers.IO) { store.records() }
+        val stored = withContext(Dispatchers.IO) { store.records() to store.tasks() }
+        records = stored.first
+        tasks = stored.second
     }
 
     fun goBack() {
-        screen = Screen.INBOX
+        screen = Screen.NOTIFICATIONS
         selectedGroup = null
     }
 
-    BackHandler(enabled = screen != Screen.INBOX, onBack = ::goBack)
+    fun deleteGroup(group: NotificationGroup) {
+        records = records.filterNot { it.conversationKey == group.conversationKey }
+        scope.launch {
+            withContext(Dispatchers.IO) { store.deleteConversation(group.conversationKey) }
+            if (showUndoSnackbar("通知を削除しました") == SnackbarResult.ActionPerformed) {
+                records = withContext(Dispatchers.IO) {
+                    store.restoreRecords(group.records)
+                    store.records()
+                }
+            }
+        }
+    }
+
+    fun createTask(group: NotificationGroup) {
+        scope.launch {
+            val createdTask = withContext(Dispatchers.IO) { store.createTaskFromConversation(group) }
+            if (createdTask == null) {
+                snackbarHostState.currentSnackbarData?.dismiss()
+                snackbarHostState.showSnackbar(
+                    message = "この通知はタスク化済みです",
+                    duration = SnackbarDuration.Short,
+                )
+                return@launch
+            }
+            tasks = withContext(Dispatchers.IO) { store.tasks() }
+            if (showUndoSnackbar("タスクに追加しました") == SnackbarResult.ActionPerformed) {
+                tasks = withContext(Dispatchers.IO) {
+                    store.deleteTask(createdTask.id)
+                    store.tasks()
+                }
+            }
+        }
+    }
+
+    fun completeTask(task: NotificationTask) {
+        tasks = tasks.filterNot { it.id == task.id }
+        scope.launch {
+            withContext(Dispatchers.IO) { store.deleteTask(task.id) }
+            if (showUndoSnackbar("タスクを完了しました") == SnackbarResult.ActionPerformed) {
+                tasks = withContext(Dispatchers.IO) {
+                    store.restoreTask(task)
+                    store.tasks()
+                }
+            }
+        }
+    }
+
+    BackHandler(enabled = screen == Screen.DETAIL, onBack = ::goBack)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background),
                 title = {
                     Column {
-                        Text(if (screen == Screen.DETAIL) "通知プレビュー" else "Bellog", fontWeight = FontWeight.Medium)
-                        if (screen == Screen.INBOX) {
-                            Text("あとで読む通知の受信箱", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(
+                            when (screen) {
+                                Screen.DETAIL -> "通知プレビュー"
+                                Screen.NOTIFICATIONS -> "通知"
+                                Screen.TASKS -> "タスク"
+                                Screen.SETTINGS -> "設定"
+                            },
+                            fontWeight = FontWeight.Medium,
+                        )
+                        if (screen == Screen.NOTIFICATIONS) {
+                            Text("右でタスク化・左で削除", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                     }
                 },
                 navigationIcon = {
-                    if (screen != Screen.INBOX) {
+                    if (screen == Screen.DETAIL) {
                         TextButton(onClick = ::goBack) { Text("戻る") }
-                    }
-                },
-                actions = {
-                    if (screen == Screen.INBOX) {
-                        TextButton(onClick = { screen = Screen.SOURCES }) { Text("収集アプリ") }
                     }
                 },
             )
         },
+        bottomBar = {
+            if (screen != Screen.DETAIL) {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+                    NavigationBarItem(
+                        selected = screen == Screen.NOTIFICATIONS,
+                        onClick = { screen = Screen.NOTIFICATIONS },
+                        icon = { Icon(Icons.Outlined.Notifications, contentDescription = null) },
+                        label = { Text("通知") },
+                    )
+                    NavigationBarItem(
+                        selected = screen == Screen.TASKS,
+                        onClick = { screen = Screen.TASKS },
+                        icon = { Icon(Icons.Outlined.CheckCircle, contentDescription = null) },
+                        label = { Text("タスク") },
+                    )
+                    NavigationBarItem(
+                        selected = screen == Screen.SETTINGS,
+                        onClick = { screen = Screen.SETTINGS },
+                        icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
+                        label = { Text("設定") },
+                    )
+                }
+            }
+        },
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
             when (screen) {
-                Screen.INBOX -> InboxScreen(
+                Screen.NOTIFICATIONS -> InboxScreen(
                     records = records,
+                    tasks = tasks,
                     notificationAccess = notificationAccess,
                     onEnableAccess = {
                         context.startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
                     },
-                    onOpenSources = { screen = Screen.SOURCES },
+                    onOpenSettings = { screen = Screen.SETTINGS },
+                    onCreateTask = ::createTask,
+                    onDeleteGroup = ::deleteGroup,
                     onOpenGroup = {
                         val readGroup = it.copy(records = it.records.map { record -> record.copy(isRead = true) })
                         selectedGroup = readGroup
@@ -224,11 +339,11 @@ private fun BellogApp(revision: Int) {
                         scope.launch(Dispatchers.IO) { store.markConversationRead(it.conversationKey) }
                     },
                 )
-                Screen.SOURCES -> SourcesScreen(
+                Screen.TASKS -> TasksScreen(tasks = tasks, onComplete = ::completeTask)
+                Screen.SETTINGS -> SettingsScreen(
                     store = store,
                     onCleared = {
                         records = emptyList()
-                        screen = Screen.INBOX
                     },
                 )
                 Screen.DETAIL -> selectedGroup?.let { DetailScreen(it) }
@@ -240,9 +355,12 @@ private fun BellogApp(revision: Int) {
 @Composable
 private fun InboxScreen(
     records: List<NotificationRecord>,
+    tasks: List<NotificationTask>,
     notificationAccess: Boolean,
     onEnableAccess: () -> Unit,
-    onOpenSources: () -> Unit,
+    onOpenSettings: () -> Unit,
+    onCreateTask: (NotificationGroup) -> Unit,
+    onDeleteGroup: (NotificationGroup) -> Unit,
     onOpenGroup: (NotificationGroup) -> Unit,
 ) {
     var query by remember { mutableStateOf("") }
@@ -294,18 +412,86 @@ private fun InboxScreen(
                         title = "まだ通知はありません",
                         text = "収集するアプリを選ぶと、次に届いた通知からここへ溜まります。",
                         button = "アプリを選ぶ",
-                        onClick = onOpenSources,
+                        onClick = onOpenSettings,
                     )
                 }
             } else if (groups.isEmpty()) {
                 item { Text("一致する通知はありません", color = MaterialTheme.colorScheme.onSurfaceVariant) }
             } else {
                 items(groups, key = { it.conversationKey }) { group ->
-                    TimelineCard(group, onClick = { onOpenGroup(group) })
+                    val groupTasks = tasks.filter { it.sourceConversationKey == group.conversationKey }
+                    SwipeableTimelineCard(
+                        group = group,
+                        taskCount = groupTasks.size,
+                        canCreateTask = groupTasks.none { it.notificationReceivedAt == group.receivedAt },
+                        onClick = { onOpenGroup(group) },
+                        onCreateTask = { onCreateTask(group) },
+                        onDelete = { onDeleteGroup(group) },
+                    )
                 }
             }
             item { Spacer(Modifier.height(20.dp)) }
         }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeableTimelineCard(
+    group: NotificationGroup,
+    taskCount: Int,
+    canCreateTask: Boolean,
+    onClick: () -> Unit,
+    onCreateTask: () -> Unit,
+    onDelete: () -> Unit,
+) {
+    val state = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            when (value) {
+                SwipeToDismissBoxValue.StartToEnd -> {
+                    onCreateTask()
+                    return@rememberSwipeToDismissBoxState false
+                }
+                SwipeToDismissBoxValue.EndToStart -> {
+                    onDelete()
+                    return@rememberSwipeToDismissBoxState true
+                }
+                SwipeToDismissBoxValue.Settled -> return@rememberSwipeToDismissBoxState false
+            }
+        },
+        positionalThreshold = { distance -> distance * 0.35f },
+    )
+    SwipeToDismissBox(
+        state = state,
+        enableDismissFromStartToEnd = canCreateTask,
+        backgroundContent = {
+            val taskDirection = state.dismissDirection == SwipeToDismissBoxValue.StartToEnd
+            val background = if (taskDirection) {
+                MaterialTheme.colorScheme.primaryContainer
+            } else {
+                MaterialTheme.colorScheme.errorContainer
+            }
+            val foreground = if (taskDirection) {
+                MaterialTheme.colorScheme.onPrimaryContainer
+            } else {
+                MaterialTheme.colorScheme.onErrorContainer
+            }
+            Row(
+                Modifier.fillMaxSize().clip(RoundedCornerShape(20.dp)).background(background).padding(horizontal = 20.dp),
+                horizontalArrangement = if (taskDirection) Arrangement.Start else Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    if (taskDirection) Icons.Outlined.AddTask else Icons.Outlined.Delete,
+                    contentDescription = null,
+                    tint = foreground,
+                )
+                Spacer(Modifier.width(8.dp))
+                Text(if (taskDirection) "タスク化" else "削除", color = foreground, fontWeight = FontWeight.Medium)
+            }
+        },
+    ) {
+        TimelineCard(group, taskCount, onClick)
     }
 }
 
@@ -321,7 +507,7 @@ private fun SetupCard(title: String, text: String, button: String, onClick: () -
 }
 
 @Composable
-private fun TimelineCard(group: NotificationGroup, onClick: () -> Unit) {
+private fun TimelineCard(group: NotificationGroup, taskCount: Int, onClick: () -> Unit) {
     val formatter = remember { SimpleDateFormat("M/d H:mm", Locale.JAPAN) }
     val darkTheme = isSystemInDarkTheme()
     val textColor = if (group.isRead) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
@@ -353,12 +539,32 @@ private fun TimelineCard(group: NotificationGroup, onClick: () -> Unit) {
                     )
                     Text(formatter.format(Date(group.receivedAt)), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Text(
-                    if (group.isRead) "${group.appLabel} · 確認済み" else group.appLabel,
-                    fontSize = 11.sp,
-                    color = if (group.isRead) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary,
+                Row(
                     modifier = Modifier.padding(top = 2.dp, bottom = 8.dp),
-                )
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        if (group.isRead) "${group.appLabel} · 確認済み" else group.appLabel,
+                        fontSize = 11.sp,
+                        color = if (group.isRead) {
+                            MaterialTheme.colorScheme.onSurfaceVariant
+                        } else {
+                            MaterialTheme.colorScheme.primary
+                        },
+                    )
+                    if (taskCount > 0) {
+                        Text(
+                            if (taskCount == 1) "タスク化済み" else "タスク ${taskCount}件",
+                            color = MaterialTheme.colorScheme.onPrimaryContainer,
+                            fontSize = 10.sp,
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(MaterialTheme.colorScheme.primaryContainer)
+                                .padding(horizontal = 7.dp, vertical = 2.dp),
+                        )
+                    }
+                }
                 group.records.takeLast(4).forEachIndexed { index, record ->
                     NotificationPreview(
                         record = record,
@@ -378,6 +584,82 @@ private fun TimelineCard(group: NotificationGroup, onClick: () -> Unit) {
                         modifier = Modifier.padding(top = 5.dp),
                     )
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TasksScreen(tasks: List<NotificationTask>, onComplete: (NotificationTask) -> Unit) {
+    if (tasks.isEmpty()) {
+        Column(
+            Modifier.fillMaxSize().padding(24.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Icon(
+                Icons.Outlined.CheckCircle,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(42.dp),
+            )
+            Text("タスクはありません", fontWeight = FontWeight.Medium, modifier = Modifier.padding(top = 12.dp))
+            Text(
+                "通知を右へスワイプすると、ここへ移動します。",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                fontSize = 13.sp,
+                modifier = Modifier.padding(top = 5.dp),
+            )
+        }
+        return
+    }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        items(tasks, key = { it.id }) { task ->
+            TaskCard(task = task, onComplete = { onComplete(task) })
+        }
+        item { Spacer(Modifier.height(20.dp)) }
+    }
+}
+
+@Composable
+private fun TaskCard(task: NotificationTask, onComplete: () -> Unit) {
+    val formatter = remember { SimpleDateFormat("M/d H:mm", Locale.JAPAN) }
+    Card(
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        shape = RoundedCornerShape(20.dp),
+    ) {
+        Row(
+            Modifier.fillMaxWidth().padding(15.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AppIcon(task.packageName, task.appLabel)
+            Column(Modifier.weight(1f)) {
+                Text(task.title, fontWeight = FontWeight.SemiBold, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                if (task.body.isNotBlank()) {
+                    Text(
+                        task.body,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 13.sp,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+                Text(
+                    "${task.appLabel} · ${formatter.format(Date(task.createdAt))}",
+                    color = MaterialTheme.colorScheme.primary,
+                    fontSize = 11.sp,
+                    modifier = Modifier.padding(top = 7.dp),
+                )
+            }
+            IconButton(onClick = onComplete) {
+                Icon(Icons.Outlined.CheckCircle, contentDescription = "完了")
             }
         }
     }
@@ -497,7 +779,7 @@ private val NotificationContentType.label: String
     }
 
 @Composable
-private fun SourcesScreen(store: NotificationStore, onCleared: () -> Unit) {
+private fun SettingsScreen(store: NotificationStore, onCleared: () -> Unit) {
     val context = LocalContext.current
     val repository = remember { InstalledAppRepository(context.applicationContext) }
     val preferences = remember { SourcePreferences(context.applicationContext) }

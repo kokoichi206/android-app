@@ -2,4 +2,6 @@
 <resources>
     <string name="app_name">Bellog</string>
     <string name="notification_listener_label">Bellog 通知保存</string>
+    <string name="shortcut_add_source_short">アプリを追加</string>
+    <string name="shortcut_add_source_long">収集アプリを追加</string>
 </resources>

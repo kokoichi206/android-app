@@ -9,7 +9,7 @@ import jp.mydns.kokoichi206.bellog.config.GroupingEngine
 import jp.mydns.kokoichi206.bellog.config.NotificationSourcePayload
 import org.json.JSONObject
 
-class NotificationStore(context: Context) : SQLiteOpenHelper(context, "bellog.db", null, 6) {
+class NotificationStore(context: Context) : SQLiteOpenHelper(context, "bellog.db", null, 8) {
 
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(
@@ -38,6 +38,7 @@ class NotificationStore(context: Context) : SQLiteOpenHelper(context, "bellog.db
         )
         db.execSQL("CREATE INDEX notifications_received_at ON notifications(received_at DESC)")
         db.execSQL("CREATE INDEX notifications_conversation ON notifications(conversation_key, received_at)")
+        createTasksTable(db)
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
@@ -127,32 +128,11 @@ class NotificationStore(context: Context) : SQLiteOpenHelper(context, "bellog.db
             migrateSourcePayloads(db)
         }
         if (oldVersion == 5) repairGeneratedMessageIds(db)
+        if (oldVersion <= 6) createTasksTable(db)
+        if (oldVersion == 7) addTaskUniqueness(db)
     }
 
-    fun insert(record: NotificationRecord): Boolean = writableDatabase.insertWithOnConflict(
-            "notifications",
-            null,
-            ContentValues().apply {
-                put("event_key", record.eventKey)
-                put("package_name", record.packageName)
-                put("app_label", record.appLabel)
-                put("conversation_key", record.conversationKey)
-                put("conversation_title", record.conversationTitle)
-                put("message_id", record.messageId)
-                put("sender", record.sender)
-                put("message", record.message)
-                put("summary", record.summary)
-                put("content_type", record.contentType.name)
-                put("received_at", record.receivedAt)
-                put("media_uri", record.mediaUri)
-                put("notification_key", record.notificationKey)
-                put("raw_payload", record.rawPayload)
-                put("source_payload", record.sourcePayload)
-                put("rule_version", record.ruleVersion)
-                put("is_read", record.isRead)
-            },
-            SQLiteDatabase.CONFLICT_IGNORE,
-        ) != -1L
+    fun insert(record: NotificationRecord): Boolean = insertNotification(writableDatabase, record) != -1L
 
     fun records(): List<NotificationRecord> = readableDatabase.query(
         "notifications",
@@ -237,6 +217,102 @@ class NotificationStore(context: Context) : SQLiteOpenHelper(context, "bellog.db
         writableDatabase.delete("notifications", null, null)
     }
 
+    fun deleteConversation(conversationKey: String) {
+        writableDatabase.delete(
+            "notifications",
+            "conversation_key = ?",
+            arrayOf(conversationKey),
+        )
+    }
+
+    fun restoreRecords(records: List<NotificationRecord>) {
+        writableDatabase.runInTransaction {
+            records.forEach { record -> insertNotification(this, record) }
+        }
+    }
+
+    fun tasks(): List<NotificationTask> = readableDatabase.query(
+        "tasks",
+        null,
+        null,
+        null,
+        null,
+        null,
+        "created_at DESC",
+    ).use { cursor ->
+        buildList {
+            while (cursor.moveToNext()) {
+                add(
+                    NotificationTask(
+                        id = cursor.getLong(cursor.getColumnIndexOrThrow("id")),
+                        sourceConversationKey = cursor.getString(
+                            cursor.getColumnIndexOrThrow("source_conversation_key"),
+                        ),
+                        packageName = cursor.getString(cursor.getColumnIndexOrThrow("package_name")),
+                        appLabel = cursor.getString(cursor.getColumnIndexOrThrow("app_label")),
+                        title = cursor.getString(cursor.getColumnIndexOrThrow("title")),
+                        body = cursor.getString(cursor.getColumnIndexOrThrow("body")),
+                        notificationReceivedAt = cursor.getLong(
+                            cursor.getColumnIndexOrThrow("notification_received_at"),
+                        ),
+                        createdAt = cursor.getLong(cursor.getColumnIndexOrThrow("created_at")),
+                    ),
+                )
+            }
+        }
+    }
+
+    fun createTaskFromConversation(
+        group: NotificationGroup,
+        createdAt: Long = System.currentTimeMillis(),
+    ): NotificationTask? {
+        val latest = group.records.maxBy { it.receivedAt }
+        val task = NotificationTask(
+            sourceConversationKey = group.conversationKey,
+            packageName = group.packageName,
+            appLabel = group.appLabel,
+            title = group.title.ifBlank { group.appLabel },
+            body = latest.message.ifBlank { latest.summary.orEmpty() },
+            notificationReceivedAt = group.receivedAt,
+            createdAt = createdAt,
+        )
+        var createdTask: NotificationTask? = null
+        writableDatabase.runInTransaction {
+            val alreadyExists = query(
+                "tasks",
+                arrayOf("id"),
+                "source_conversation_key = ? AND notification_received_at = ?",
+                arrayOf(group.conversationKey, group.receivedAt.toString()),
+                null,
+                null,
+                null,
+                "1",
+            ).use { it.moveToFirst() }
+            if (!alreadyExists) {
+                val id = insertOrThrow(
+                    "tasks",
+                    null,
+                    task.toContentValues(includeId = false),
+                )
+                createdTask = task.copy(id = id)
+            }
+        }
+        return createdTask
+    }
+
+    fun restoreTask(task: NotificationTask) {
+        writableDatabase.insertWithOnConflict(
+            "tasks",
+            null,
+            task.toContentValues(includeId = true),
+            SQLiteDatabase.CONFLICT_REPLACE,
+        )
+    }
+
+    fun deleteTask(id: Long) {
+        writableDatabase.delete("tasks", "id = ?", arrayOf(id.toString()))
+    }
+
     fun markConversationRead(conversationKey: String) {
         writableDatabase.update(
             "notifications",
@@ -244,6 +320,83 @@ class NotificationStore(context: Context) : SQLiteOpenHelper(context, "bellog.db
             "conversation_key = ?",
             arrayOf(conversationKey),
         )
+    }
+
+    private fun createTasksTable(db: SQLiteDatabase) {
+        db.execSQL(
+            """
+            CREATE TABLE tasks (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                source_conversation_key TEXT NOT NULL,
+                package_name TEXT NOT NULL,
+                app_label TEXT NOT NULL,
+                title TEXT NOT NULL,
+                body TEXT NOT NULL,
+                notification_received_at INTEGER NOT NULL,
+                created_at INTEGER NOT NULL
+            )
+            """.trimIndent(),
+        )
+        db.execSQL("CREATE INDEX tasks_created_at ON tasks(created_at DESC)")
+        db.execSQL(
+            "CREATE UNIQUE INDEX tasks_source_notification " +
+                "ON tasks(source_conversation_key, notification_received_at)",
+        )
+    }
+
+    private fun addTaskUniqueness(db: SQLiteDatabase) {
+        // 同じ通知から作られた既存タスクは内容も同じなので、最初の1件だけを残す。
+        db.execSQL(
+            """
+            DELETE FROM tasks
+            WHERE id NOT IN (
+                SELECT MIN(id)
+                FROM tasks
+                GROUP BY source_conversation_key, notification_received_at
+            )
+            """.trimIndent(),
+        )
+        db.execSQL(
+            "CREATE UNIQUE INDEX tasks_source_notification " +
+                "ON tasks(source_conversation_key, notification_received_at)",
+        )
+    }
+
+    private fun insertNotification(db: SQLiteDatabase, record: NotificationRecord): Long =
+        db.insertWithOnConflict(
+            "notifications",
+            null,
+            ContentValues().apply {
+                put("event_key", record.eventKey)
+                put("package_name", record.packageName)
+                put("app_label", record.appLabel)
+                put("conversation_key", record.conversationKey)
+                put("conversation_title", record.conversationTitle)
+                put("message_id", record.messageId)
+                put("sender", record.sender)
+                put("message", record.message)
+                put("summary", record.summary)
+                put("content_type", record.contentType.name)
+                put("received_at", record.receivedAt)
+                put("media_uri", record.mediaUri)
+                put("notification_key", record.notificationKey)
+                put("raw_payload", record.rawPayload)
+                put("source_payload", record.sourcePayload)
+                put("rule_version", record.ruleVersion)
+                put("is_read", record.isRead)
+            },
+            SQLiteDatabase.CONFLICT_IGNORE,
+        )
+
+    private fun NotificationTask.toContentValues(includeId: Boolean) = ContentValues().apply {
+        if (includeId) put("id", id)
+        put("source_conversation_key", sourceConversationKey)
+        put("package_name", packageName)
+        put("app_label", appLabel)
+        put("title", title)
+        put("body", body)
+        put("notification_received_at", notificationReceivedAt)
+        put("created_at", createdAt)
     }
 
     private fun migrateSourcePayloads(db: SQLiteDatabase) {
